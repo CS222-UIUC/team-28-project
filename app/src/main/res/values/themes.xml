@@ -1,9 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Calendar_App" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <!-- 如果你用的是 Material Components, 可以继承它 -->
+    <style name="Theme.MyCalendarApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- 在这里设置自定义的颜色、控件样式等。比如： -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorAccent">@color/teal_200</item>
+        <!-- 其他属性…… -->
     </style>
 
-    <style name="Theme.Calendar_App" parent="Base.Theme.Calendar_App" />
+    <!-- 如果是新模板可能还会有一个默认的 Theme 就在这文件里，
+         你也可以添加自己的 style，或者改动现有的都行。 -->
+
 </resources>

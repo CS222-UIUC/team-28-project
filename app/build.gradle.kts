@@ -30,11 +30,9 @@ android {
 }
 
 
-
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
 
-    // ★关键：MaterialCalendarView
-    implementation("com.prolificinteractive:material-calendarview:1.4.3")
+    // MaterialCalendarView
 }
