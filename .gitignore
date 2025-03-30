@@ -1,0 +1,12 @@
+venv
+.env
+output.json
+node_modules
+StudySync/node_modules
+.expo
+.expo/
+.expo/cache
+.expo/cache/
+.expo/cache/
+.expo/cache/
+.expo/cache/
