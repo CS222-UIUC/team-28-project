@@ -61,43 +61,51 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## Running the Application
 
-### Running the Application
+### Server Mode
 
-Start the server:
+Start the API server:
 ```bash
-cd app
-python main.py --port 8000
+python app/main.py --server --port 8000
 ```
 
 The API will be accessible at `http://localhost:8000`.
 
+### Direct Text Processing Mode
 
-### NLP Processing
-
-- **POST /nlp/process**: Process text input and extract entities
-- **GET /nlp/process_file**: Process input.json file and generate output.json
-
-### Calendar Integration
-
-- **POST /calendar/create_event**: Create a calendar event
-- **GET /calendar/events**: List upcoming calendar events
-- **GET /calendar/event/{event_id}**: Get event details
-- **DELETE /calendar/event/{event_id}**: Delete an event
-- **POST /calendar/create_from_nlp**: Process text and create a calendar event
-
-### Authentication
-
-- **POST /api/login**: User authentication endpoint
-
-## Testing
-
-Test NLP functionality with the provided test scripts:
-
+Process text directly from the command line without starting the server:
 ```bash
-cd app
-python test_nlp.py        # Tests processing of input.json
-python test_single_nlp.py # Tests processing individual text inputs
+python app/main.py --process
 ```
+
+## Testing Tools
+
+The project includes several tools for testing and troubleshooting:
+
+### 1. Simple NLP Testing
+
+Test NLP functionality without Google Calendar integration:
+```bash
+python app/test_simple_nlp.py
+```
+
+### 2. Google OAuth Troubleshooter
+
+Fix Google Calendar authentication issues, especially for the "redirect_uri_mismatch" error:
+```bash
+python app/fix_google_oauth.py
+```
+- Identify redirect URI issues
+- Test authentication with different URIs
+- Provides step-by-step guidance for fixing authentication problems
+
+### 3. API Client
+
+Test the full API with both text processing and calendar event creation:
+```bash
+python app/test_api_client.py
+```
+This requires the server to be running (`python app/main.py --server`).
 
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 from app.models.models import TaskEvent, EventResponse
 from app.services.calendar_service import get_calendar_service
 from datetime import datetime, timedelta
@@ -139,7 +139,7 @@ async def delete_calendar_event(event_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete calendar event: {str(e)}")
 
 @router.post("/create_from_nlp")
-async def create_from_nlp(text: str):
+async def create_from_nlp(text: str = Body(..., embed=True)):
     """Process natural language text and create a calendar event from it"""
     try:
         # Extract task information using NLP
@@ -157,7 +157,13 @@ async def create_from_nlp(text: str):
         )
         
         # Create calendar event
-        return await create_calendar_event(task_event)
+        event_response = await create_calendar_event(task_event)
+        
+        # Return both the extracted NLP data and the created event
+        return {
+            "extracted_data": extracted,
+            "created_event": event_response
+        }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create event from text: {str(e)}") 

@@ -40,8 +40,17 @@ class TaskExtractor:
         # Process the text with spaCy
         doc = nlp(text)
         
-        # Extract entities (dates, people, locations)
-        self._extract_entities(doc, extracted)
+        # Step 1: Extract participants first - crucial to do this before locations
+        self._extract_participants(doc, extracted)
+        
+        # Step 2: Extract dates and times
+        self._extract_date_time(doc.text, extracted)
+        
+        # Step 3: Extract locations (avoiding words already classified)
+        self._extract_locations(doc, extracted)
+        
+        # Final pass: Check for capitalized names after "with" - these are almost always people, not locations
+        self._check_with_preposition(doc, extracted)
         
         # Extract task information in a general manner
         self._extract_task(doc, text, extracted)
@@ -54,16 +63,73 @@ class TaskExtractor:
         
         return extracted
     
+    def _extract_participants(self, doc, extracted):
+        """Extract people names and potential participants based on context."""
+        # First pass: Extract names specifically identified by spaCy as persons
+        for ent in doc.ents:
+            if ent.label_ == "PERSON" and ent.text not in extracted["participants"]:
+                extracted["participants"].append(ent.text)
+        
+        # Second pass: Direct pattern matching for 'with [CapitalWord]' which are almost always people
+        with_name_pattern = re.compile(r'\bwith\s+([A-Z][a-z]+)\b')
+        matches = with_name_pattern.finditer(doc.text)
+        for match in matches:
+            name = match.group(1)
+            if name not in extracted["participants"]:
+                extracted["participants"].append(name)
+        
+        # Third pass: Look for names with strong participant indicators
+        strong_indicators = ["with", "and", "meet", "call", "email", "contact", "talk to", "invite"]
+        collective_nouns = ["team", "staff", "group", "committee", "family", "class", "crew"]
+        
+        for token in doc:
+            if token.text.lower() in strong_indicators:
+                # Look ahead for potential name tokens
+                i = token.i + 1
+                
+                # Skip stop words and punctuation
+                while i < len(doc) and (doc[i].is_stop or doc[i].pos_ in ["PUNCT", "DET"]):
+                    i += 1
+                
+                # Handle collective nouns
+                if i < len(doc) and doc[i].text.lower() in collective_nouns:
+                    if doc[i].text not in extracted["participants"]:
+                        extracted["participants"].append(doc[i].text)
+                    continue
+                
+                # If we find a capitalized word or proper noun, consider it a name
+                if i < len(doc) and (doc[i].text[0].isupper() or doc[i].pos_ == "PROPN"):
+                    name_start = i
+                    name_end = i
+                    
+                    # Find the end of the name (which may be multiple tokens)
+                    while (name_end + 1 < len(doc) and 
+                           (doc[name_end + 1].text[0].isupper() or doc[name_end + 1].pos_ == "PROPN") and 
+                           doc[name_end + 1].text.lower() not in strong_indicators):
+                        name_end += 1
+                    
+                    # Extract the full name
+                    potential_name = doc[name_start:name_end + 1].text
+                    
+                    # Skip common non-person capitalized words
+                    non_person_words = ["monday", "tuesday", "wednesday", "thursday", "friday", 
+                                      "saturday", "sunday", "january", "february", "march", 
+                                      "april", "may", "june", "july", "august", "september", 
+                                      "october", "november", "december"]
+                    
+                    if (potential_name.lower() not in non_person_words and 
+                        not any(ent.text == potential_name and ent.label_ in {"GPE", "LOC", "FAC", "ORG"} for ent in doc.ents) and
+                        not re.search(r'\d+\s*(?:am|pm|AM|PM)', potential_name) and
+                        potential_name not in extracted["participants"]):
+                        
+                        extracted["participants"].append(potential_name)
+    
     def _extract_entities(self, doc, extracted):
         """Extract named entities and other structured information."""
         location_labels = {"FAC", "GPE", "LOC", "ORG"}
         
         for ent in doc.ents:
-            if ent.label_ == "PERSON":
-                person_name = ent.text
-                extracted["participants"].append(person_name)
-                
-            elif ent.label_ == "DATE":
+            if ent.label_ == "DATE":
                 dt = date_parse(ent.text)
                 if dt:
                     extracted["date"] = dt.strftime("%Y-%m-%d")
@@ -74,40 +140,23 @@ class TaskExtractor:
                     extracted["time"] = dt.strftime("%H:%M")
                     
             elif ent.label_ in location_labels:
-                extracted["locations"].append(ent.text)
+                # Don't add locations here - we'll do it in _extract_locations
+                # after participants and times are extracted
+                pass
 
-        # Additional extraction using regex patterns
-        self._extract_date_time(doc.text, extracted)
-        self._extract_locations(doc, extracted)
-    
     def _extract_date_time(self, text, extracted):
         """Extract dates and times using regex patterns."""
-        date_patterns = [
-            r'\b(?:next|this)\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b',
-            r'\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b',
-            r'\btomorrow\b',
-            r'\btoday\b',
-            r'\bnext week\b',
-            r'\bnext month\b'
-        ]
+        # Simplified time pattern for direct matching
+        simple_time_pattern = r'\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.)\b'
         
-        time_patterns = [
-            r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm)\b',
-            r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:a\.m\.|p\.m\.)\b',
-            r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:AM|PM)\b',
-            r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:A\.M\.|P\.M\.)\b',
-            r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:hrs|hour|hours)\b'
-        ]
-        
-        end_time_markers = [
-            r'\buntil\s+(\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.|hrs|hour|hours))',
-            r'\bto\s+(\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.|hrs|hour|hours))',
-            r'\bending\s+(?:at|by)?\s+(\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.|hrs|hour|hours))',
-            r'\bend(?:s|ing)?\s+(?:at|by)?\s+(\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.|hrs|hour|hours))',
-            r'\b(?:from|starting|begins|beginning).*\s+(?:to|until|til|till)\s+(\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.|hrs|hour|hours))'
-        ]
-        
+        # Extract date first
         if not extracted["date"]:
+            date_patterns = [
+                r'\b(?:next|this)\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b',
+                r'\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b',
+                r'\btomorrow\b', r'\btoday\b', r'\bnext week\b', r'\bnext month\b'
+            ]
+            
             for pattern in date_patterns:
                 match = re.search(pattern, text, re.IGNORECASE)
                 if match:
@@ -116,57 +165,157 @@ class TaskExtractor:
                         extracted["date"] = dt.strftime("%Y-%m-%d")
                         break
         
+        # Check for time ranges first
+        time_range_patterns = [
+            r'from\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))\s+to\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))',
+            r'(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))\s+to\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))',
+            r'between\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))\s+and\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))'
+        ]
+        
+        for pattern in time_range_patterns:
+            time_range_match = re.search(pattern, text, re.IGNORECASE)
+            if time_range_match:
+                start_time_text = time_range_match.group(1)
+                end_time_text = time_range_match.group(2)
+                
+                # Parse start time
+                start_match = re.search(simple_time_pattern, start_time_text, re.IGNORECASE)
+                if start_match:
+                    hour = int(start_match.group(1))
+                    minute = 0
+                    if start_match.group(2):
+                        minute = int(start_match.group(2))
+                    period = start_match.group(3).lower()
+                    
+                    # Adjust hour for PM
+                    if 'pm' in period and hour < 12:
+                        hour += 12
+                    elif 'am' in period and hour == 12:
+                        hour = 0
+                        
+                    extracted["time"] = f"{hour:02d}:{minute:02d}"
+                
+                # Parse end time
+                end_match = re.search(simple_time_pattern, end_time_text, re.IGNORECASE)
+                if end_match:
+                    hour = int(end_match.group(1))
+                    minute = 0
+                    if end_match.group(2):
+                        minute = int(end_match.group(2))
+                    period = end_match.group(3).lower()
+                    
+                    # Adjust hour for PM
+                    if 'pm' in period and hour < 12:
+                        hour += 12
+                    elif 'am' in period and hour == 12:
+                        hour = 0
+                        
+                    extracted["end_time"] = f"{hour:02d}:{minute:02d}"
+                
+                # If we found a time range, exit
+                if extracted["time"] and extracted["end_time"]:
+                    break
+        
+        # Look for individual time if no range found
         if not extracted["time"]:
+            time_patterns = [
+                r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:am|pm)\b',
+                r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:a\.m\.|p\.m\.)\b',
+                r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:AM|PM)\b',
+                r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:A\.M\.|P\.M\.)\b',
+                r'\b\d{1,2}\s*(?::\s*\d{2})?\s*(?:hrs|hour|hours)\b',
+                r'\bnoon\b', r'\bmidnight\b'
+            ]
+            
             for pattern in time_patterns:
                 match = re.search(pattern, text, re.IGNORECASE)
                 if match:
-                    dt = date_parse(match.group(0))
-                    if dt:
-                        extracted["time"] = dt.strftime("%H:%M")
+                    # Handle special cases
+                    if match.group(0).lower() == 'noon':
+                        extracted["time"] = "12:00"
+                    elif match.group(0).lower() == 'midnight':
+                        extracted["time"] = "00:00"
+                    # Try direct time parsing
+                    else:
+                        time_match = re.search(simple_time_pattern, match.group(0), re.IGNORECASE)
+                        if time_match:
+                            hour = int(time_match.group(1))
+                            minute = 0
+                            if time_match.group(2):
+                                minute = int(time_match.group(2))
+                            period = ""
+                            if time_match.group(3):
+                                period = time_match.group(3).lower()
+                            
+                            # Adjust hour for AM/PM
+                            if period and 'pm' in period and hour < 12:
+                                hour += 12
+                            elif period and 'am' in period and hour == 12:
+                                hour = 0
+                                
+                            extracted["time"] = f"{hour:02d}:{minute:02d}"
+                        # Fallback to dateparser
+                        else:
+                            dt = date_parse(match.group(0))
+                            if dt:
+                                extracted["time"] = dt.strftime("%H:%M")
+                    
+                    # Break after finding valid time
+                    if extracted["time"]:
                         break
-        
-        # Extract end time if present
-        if not extracted["end_time"]:
-            for pattern in end_time_markers:
-                match = re.search(pattern, text, re.IGNORECASE)
-                if match:
-                    # The captured group contains the time
-                    end_time_text = match.group(1)
-                    dt = date_parse(end_time_text)
-                    if dt:
-                        extracted["end_time"] = dt.strftime("%H:%M")
-                        break
-            
-            # If we have time but no end_time, look for duration patterns
-            if extracted["time"] and not extracted["end_time"]:
-                duration_patterns = [
-                    r'\bfor\s+(\d+)\s+(?:hour|hr)s?\b',
-                    r'\b(\d+)\s+(?:hour|hr)s?\s+(?:long|duration)',
-                    r'\b(\d+\.?\d*)\s+(?:hour|hr)s?\b'
-                ]
-                
-                for pattern in duration_patterns:
-                    match = re.search(pattern, text, re.IGNORECASE)
-                    if match:
-                        try:
-                            hours = float(match.group(1))
-                            if extracted["time"]:
-                                start_time = datetime.strptime(extracted["time"], "%H:%M")
-                                end_time = start_time + timedelta(hours=hours)
-                                extracted["end_time"] = end_time.strftime("%H:%M")
-                                break
-                        except:
-                            pass
     
     def _extract_locations(self, doc, extracted):
-        """Extract locations based on prepositions and context."""
+        """Extract locations based on prepositions and context, avoiding known participants and times."""
+        # Create a list of words that are already classified as participants or times
+        classified_words = []
+        excluded_patterns = []
+        
+        # Add participant names - these should never be considered locations
+        for participant in extracted["participants"]:
+            classified_words.extend(participant.lower().split())
+        
+        # Add time-related words and values
+        if extracted["time"] or extracted["end_time"]:
+            # Extract raw time values from the text
+            time_values = re.findall(r'\b(\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM|A\.M\.|P\.M\.))\b', doc.text, re.IGNORECASE)
+            for time_val in time_values:
+                classified_words.append(time_val.lower().strip())
+                excluded_patterns.append(time_val.lower().strip())
+            
+            # Also exclude time range expressions
+            for phrase in ["from", "to", "between", "and"]:
+                if phrase in doc.text.lower():
+                    excluded_patterns.append(phrase.lower())
+        
+        # Common time indicators to exclude from locations
+        time_words = ["am", "pm", "morning", "afternoon", "evening", "night", "noon", "midnight"]
+        classified_words.extend(time_words)
+        
+        # Only consider strong location indicators
+        location_prepositions = {"at", "in", "near", "around", "by"}
+        
+        # Track potential "with X" patterns to exclude from locations
+        with_patterns = []
+        for i, token in enumerate(doc):
+            if token.text.lower() == "with" and i < len(doc) - 1:
+                j = i + 1
+                while j < len(doc) and (doc[j].is_stop or doc[j].pos_ in ["PUNCT", "DET"]):
+                    j += 1
+                if j < len(doc) and doc[j].text[0].isupper():
+                    name_end = j
+                    while name_end + 1 < len(doc) and doc[name_end + 1].text[0].isupper():
+                        name_end += 1
+                    with_patterns.append(doc[j:name_end+1].text)
+        
+        # Add these to classified words so they won't be picked up as locations
+        for pattern in with_patterns:
+            classified_words.extend(pattern.lower().split())
+        
+        # Look for locations with prepositions
         for token in doc:
-            if token.text.lower() in {"at", "to", "in"} and token.i < len(doc) - 1:
-                if token.text.lower() == "to" and doc[token.i+1].pos_ == "VERB":
-                    continue
-                if doc[token.i+1].ent_type_ in {"TIME", "DATE"}:
-                    continue
-                if doc[token.i+1].pos_ == "VERB":
+            if token.text.lower() in location_prepositions and token.i < len(doc) - 1:
+                # Skip verb constructions and time expressions
+                if doc[token.i+1].pos_ == "VERB" or doc[token.i+1].ent_type_ in {"TIME", "DATE"}:
                     continue
 
                 candidate = None
@@ -187,22 +336,31 @@ class TaskExtractor:
                         if doc[token.i+1].pos_ != "VERB":
                             candidate = doc[token.i+1].text
 
-                if candidate and any(tok.pos_ == "VERB" for tok in nlp(candidate)):
-                    continue
+                if candidate and candidate not in with_patterns and candidate not in extracted["locations"]:
+                    candidate_lower = candidate.lower()
                     
-                if candidate:
-                    should_add = True
-                    for loc in extracted["locations"]:
-                        if candidate in loc or loc in candidate:
-                            should_add = False
-                            break
-                    if should_add:
-                        extracted["locations"].append(candidate)
-
-        extracted["locations"] = list(set(extracted["locations"]))
-        common_verbs = ["plan", "schedule", "attend", "visit", "go", "meet", "call", "submit"]
-        extracted["locations"] = [loc for loc in extracted["locations"] 
-                                  if not any(loc.lower().startswith(verb) for verb in common_verbs)]
+                    # Skip if candidate has any disqualifying features
+                    if (re.search(r'\b\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.|AM|PM)\b', candidate_lower, re.IGNORECASE) or
+                        any(word in candidate_lower.split() for word in classified_words) or
+                        any(pattern in candidate_lower for pattern in excluded_patterns) or
+                        any(tok.pos_ == "VERB" for tok in nlp(candidate)) or
+                        re.search(r'^\d+(?::\d+)?$', candidate_lower)):
+                        continue
+                    
+                    # Add the location
+                    extracted["locations"].append(candidate)
+        
+        # Add named locations identified by spaCy
+        location_labels = {"FAC", "GPE", "LOC", "ORG"}
+        for ent in doc.ents:
+            if (ent.label_ in location_labels and
+                ent.text not in extracted["participants"] and
+                ent.text not in with_patterns and
+                not re.search(r'\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b', ent.text.lower(), re.IGNORECASE) and
+                ent.text not in extracted["locations"] and
+                not any(word in ent.text.lower().split() for word in classified_words)):
+                
+                extracted["locations"].append(ent.text)
     
     def _extract_task(self, doc, text, extracted):
         """
@@ -250,27 +408,23 @@ class TaskExtractor:
         task_text = extracted["task"]
         words_to_remove = set()
         
+        # Collect all words to remove
         for participant in extracted["participants"]:
             words_to_remove.update(participant.lower().split())
             
         for location in extracted["locations"]:
             words_to_remove.update(location.lower().split())
             
-        if extracted["date"]:
-            date_doc = nlp(doc.text)
-            for ent in date_doc.ents:
-                if ent.label_ == "DATE":
-                    words_to_remove.update(ent.text.lower().split())
-                    
-        if extracted["time"]:
-            time_doc = nlp(doc.text)
-            for ent in time_doc.ents:
-                if ent.label_ == "TIME":
-                    words_to_remove.update(ent.text.lower().split())
+        # Add date and time entities
+        for ent in doc.ents:
+            if ent.label_ in ["DATE", "TIME"]:
+                words_to_remove.update(ent.text.lower().split())
         
-        connecting_words = {"at", "on", "with", "to", "for", "by", "from", "about", "as", "for", "in", "into", "like", "of", "off", "onto", "out", "over", "past", "so", "than", "that", "to", "up", "via"}
+        connecting_words = {"at", "on", "with", "to", "for", "by", "from", "about", 
+                           "as", "in", "into", "like", "of", "off", "onto", "out", 
+                           "over", "past", "so", "than", "that", "up", "via"}
         
-        # Split task into words and filter out entities and connecting words
+        # Filter out entities and connecting words
         task_words = []
         for word in task_text.split():
             if (word.lower() not in words_to_remove and 
@@ -279,19 +433,49 @@ class TaskExtractor:
         
         cleaned_task = " ".join(task_words)
         
-        # Capitalize first letter if the task is not empty
-        if cleaned_task:
-            cleaned_task = cleaned_task[0].upper() + cleaned_task[1:]
-        else:
+        # Generate fallback task if empty
+        if not cleaned_task:
+            # Try to find a verb
             for token in doc:
                 if token.pos_ == "VERB" and not token.is_stop:
                     cleaned_task = token.lemma_.capitalize()
                     break
             
+            # Last resort
             if not cleaned_task:
                 cleaned_task = "Task"
+        # Capitalize first letter
+        elif cleaned_task:
+            cleaned_task = cleaned_task[0].upper() + cleaned_task[1:]
         
         extracted["task"] = cleaned_task
+
+    def _check_with_preposition(self, doc, extracted):
+        """Final check for 'with X' patterns that should be participants, moving them from locations if needed."""
+        # Process "with X" patterns which strongly indicate people rather than places
+        for i, token in enumerate(doc):
+            if token.text.lower() == "with" and i < len(doc) - 1:
+                # Look ahead for capitalized words or proper nouns
+                j = i + 1
+                while j < len(doc) and (doc[j].is_stop or doc[j].pos_ in ["PUNCT", "DET"]):
+                    j += 1  # Skip stop words and punctuation
+                
+                if j < len(doc) and doc[j].text[0].isupper():
+                    # This is likely a name after "with" - check if it's in locations
+                    name_start = j
+                    name_end = j
+                    
+                    # Get the full name (which may be multiple tokens)
+                    while name_end + 1 < len(doc) and doc[name_end + 1].text[0].isupper():
+                        name_end += 1
+                    
+                    potential_name = doc[name_start:name_end + 1].text
+                    
+                    # If this potential name is currently marked as a location, move it to participants
+                    if potential_name in extracted["locations"]:
+                        extracted["locations"].remove(potential_name)
+                        if potential_name not in extracted["participants"]:
+                            extracted["participants"].append(potential_name)
 
 
 extractor = TaskExtractor()
@@ -356,3 +540,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
