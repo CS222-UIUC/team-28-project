@@ -1,96 +1,103 @@
-# Calendar NLP Processing API
+# NLP Task Calendar
 
-A FastAPI application that uses Natural Language Processing (NLP) to extract event details from text and integrate with Google Calendar.
+A FastAPI application that processes natural language task descriptions, extracts relevant information (dates, times, participants, locations), and integrates with Google Calendar for event management.
 
 ## Features
 
-- Extract entities (date, time, participants, location) from natural language text
-- Process tasks and generate structured data from unstructured text
-- RESTful API with FastAPI
-- Google Calendar integration for event management
+- **Natural Language Processing**: Extract entities from text descriptions
+- **Task Management**: Convert natural language text into structured task data
+- **Calendar Integration**: Create, view, and manage events in Google Calendar
+- **RESTful API**: Well-structured API endpoints for all functionality
+- **Authentication**: Basic authentication for API access
 
 ## Project Structure
+
+The project follows a modular approach for better maintainability:
 
 ```
 team-28-project/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # Main FastAPI application setup
-│   ├── routers/
+│   ├── main.py                  # Main FastAPI application
+│   ├── models/                  # Data models
 │   │   ├── __init__.py
-│   │   └── nlp_events.py    # NLP processing router for text analysis
-│   └── services/
+│   │   └── models.py            # Pydantic models for data validation
+│   ├── routers/                 # API route definitions
+│   │   ├── __init__.py
+│   │   ├── calendar_router.py   # Calendar management endpoints
+│   │   ├── login_router.py      # Authentication endpoints
+│   │   └── nlp_events.py        # Natural language processing endpoints
+│   ├── services/                # Service layer
+│   │   ├── __init__.py
+│   │   └── calendar_service.py  # Google Calendar integration
+│   └── utils/                   # Utility functions
 │       ├── __init__.py
-│       └── calendar_service.py  # Google Calendar service
-├── nlp/
-│   └── nlp.py               # NLP processing module with entity extraction
-├── .env                     # Environment variables
-└── requirements.txt         # Project dependencies
+│       └── server.py            # Server configuration utilities
+├── nlp/                         # NLP processing
+│   └── nlp.py                   # Entity extraction and text processing
+├── input.json                   # Sample input for testing
+├── output.json                  # Output from processing
+├── requirements.txt             # Project dependencies
+└── .env                         # Environment variables
 ```
 
-## Getting Started
 
+### Installation
 
-### Setup 
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/team-28-project.git
+cd team-28-project
+```
 
-1. Install dependencies:
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Set up environment variables in a `.env` file:
-```
-API_HOST=0.0.0.0  # Host to run the API on
-API_PORT=8000     # Port to run the API on
-```
-
-3. For Google Calendar integration, place your credentials in the appropriate location (refer to Google's documentation).
 
 ### Running the Application
 
-Start the application with:
+Start the server:
 ```bash
 cd app
-python -m uvicorn main:app --reload
+python main.py --port 8000
 ```
 
-The API will be available at `http://localhost:8000`.
+The API will be accessible at `http://localhost:8000`.
 
-## API Endpoints
 
 ### NLP Processing
 
-- **GET /get_data**: Process and extract entities from text
-  - Input: JSON with a "tasks" array containing objects with "text" fields
-  - Output: Extracted entities for each task and saves results to output.json
+- **POST /nlp/process**: Process text input and extract entities
+- **GET /nlp/process_file**: Process input.json file and generate output.json
 
-### Root Endpoint
+### Calendar Integration
 
-- **GET /**: Verify the API is running
-  - Output: `{"message": "Calendar API is running"}`
+- **POST /calendar/create_event**: Create a calendar event
+- **GET /calendar/events**: List upcoming calendar events
+- **GET /calendar/event/{event_id}**: Get event details
+- **DELETE /calendar/event/{event_id}**: Delete an event
+- **POST /calendar/create_from_nlp**: Process text and create a calendar event
 
-## NLP Capabilities
+### Authentication
 
-The NLP component can extract the following entities:
-- **Task**: Identifies what kind of task is being described (e.g., meeting, call)
-- **Participants**: Extracts people's names
-- **Date**: Identifies date references
-- **Time**: Extracts time references
-- **Priority**: Determines if a task is urgent, high-priority, etc.
-- **Locations**: Identifies places mentioned in the text
-- **Description**: Preserves the original text
+- **POST /api/login**: User authentication endpoint
 
-## Technical Details
+## Testing
 
-- The application uses spaCy's `en_core_web_sm` model for NLP processing
-- Date and time parsing is handled with the dateparser library
-- FastAPI is used for building the RESTful API
-- The Python path is configured to allow imports across the project structure
+Test NLP functionality with the provided test scripts:
 
-## Documentation
+```bash
+cd app
+python test_nlp.py        # Tests processing of input.json
+python test_single_nlp.py # Tests processing individual text inputs
+```
 
-API documentation is automatically generated by FastAPI:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
 
-![image](https://github.com/user-attachments/assets/292863b0-0787-43db-b7dd-0f941f26d06a)
