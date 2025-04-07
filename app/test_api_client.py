@@ -5,7 +5,7 @@ import sys
 import os
 
 # Default API URL
-API_URL = "http://localhost:8000"
+API_URL = "http://localhost:8081"
 
 def process_text(text):
     """Process a single text input using the API"""
