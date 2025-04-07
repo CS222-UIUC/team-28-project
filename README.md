@@ -16,68 +16,141 @@ The project follows a modular approach for better maintainability:
 
 ```
 team-28-project/
-├── app/
+├── app/                    # Backend FastAPI application
 │   ├── __init__.py
-│   ├── main.py                  # Main FastAPI application
-│   ├── models/                  # Data models
+│   ├── main.py            # Main FastAPI application
+│   ├── models/            # Data models
 │   │   ├── __init__.py
 │   │   └── models.py            # Pydantic models for data validation
-│   ├── routers/                 # API route definitions
+│   ├── routers/           # API route definitions
 │   │   ├── __init__.py
 │   │   ├── calendar_router.py   # Calendar management endpoints
 │   │   ├── login_router.py      # Authentication endpoints
 │   │   └── nlp_events.py        # Natural language processing endpoints
-│   ├── services/                # Service layer
+│   ├── services/          # Service layer
 │   │   ├── __init__.py
 │   │   └── calendar_service.py  # Google Calendar integration
-│   └── utils/                   # Utility functions
+│   └── utils/             # Utility functions
 │       ├── __init__.py
 │       └── server.py            # Server configuration utilities
-├── nlp/                         # NLP processing
+├── StudySync/             # Frontend React Native application
+│   ├── app/               # Expo Router app directory
+│   ├── backend/           # Authentication server
+│   └── assets/            # Static assets
+├── nlp/                   # NLP processing
 │   └── nlp.py                   # Entity extraction and text processing
 ├── input.json                   # Sample input for testing
 ├── output.json                  # Output from processing
-├── requirements.txt             # Project dependencies
+├── requirements.txt             # Python dependencies
 └── .env                         # Environment variables
 ```
 
+## Testing Instructions
 
-### Installation
+### Prerequisites
+- Node.js and npm installed
+- Python 3.x and pip installed
+- Virtual environment (recommended)
 
-1. Clone the repository:
+### Step 1: Kill Any Running Servers
+Before starting, ensure no conflicting servers are running:
 ```bash
-git clone https://github.com/yourusername/team-28-project.git
-cd team-28-project
+# Kill any processes running on our ports
+pkill -f "node authServer.js"
+lsof -ti:3000,8080,8081 | xargs kill -9
 ```
 
-2. Create and activate a virtual environment:
+### Step 2: Start the Servers
+You need to run three servers in separate terminal windows:
+
+1. **Auth Server** (Terminal 1):
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+cd StudySync/backend
+node authServer.js
+```
+You should see: `Auth API running at http://localhost:3000`
+
+2. **FastAPI Backend** (Terminal 2):
+```bash
+cd app
+python main.py --server --port 8080
+```
+You should see: 
+```
+Starting server on http://127.0.0.1:8080
+INFO:     Started server process [xxxxx]
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
 ```
 
-3. Install dependencies:
+3. **Frontend Development Server** (Terminal 3):
 ```bash
-pip install -r requirements.txt
+cd StudySync
+npm start
 ```
 
-## Running the Application
+### Step 3: Launch the Application
 
-### Server Mode
+After starting all servers, you have several options to run the application:
 
-Start the API server:
+1. **Web Browser (Recommended for testing):**
+   - When the Expo server starts, press `w` to open in web browser
+   - The app will open at http://localhost:8081
+
+2. **iOS Simulator:**
+   - Press `i` to open iOS simulator options
+   - Select your preferred device (e.g., "iPhone SE (3rd generation)")
+
+3. **Android Emulator:**
+   - Press `a` to open in Android emulator
+   - Make sure you have an Android emulator running
+
+### Step 4: Verify Everything is Running
+
+1. **Check Auth Server:**
 ```bash
-python app/main.py --server --port 8000
+curl http://localhost:3000
 ```
 
-The API will be accessible at `http://localhost:8000`.
-
-### Direct Text Processing Mode
-
-Process text directly from the command line without starting the server:
+2. **Check FastAPI Server:**
 ```bash
-python app/main.py --process
+curl http://localhost:8080
 ```
+Should return: `{"message":"NLP Task Calendar API is running"}`
+
+3. **Check Frontend:**
+- Open http://localhost:8081 in your browser
+- You should see the login page
+
+### Troubleshooting
+
+If you encounter any issues:
+
+1. **Port Conflicts:**
+   - Follow Step 1 to kill all running servers
+   - Restart the servers in order (auth → FastAPI → frontend)
+
+2. **Authentication Issues:**
+   - Clear your browser cache and local storage
+   - Try logging out and logging back in
+
+3. **Server Connection Issues:**
+   - Verify all three servers are running in separate terminals
+   - Check console logs for any error messages
+   - Ensure you're using `localhost` not IP addresses
+
+4. **Common Fixes:**
+   - If the frontend doesn't load: try clearing npm cache (`npm cache clean --force`)
+   - If backend fails: check Python virtual environment is activated
+   - If auth fails: verify Google OAuth credentials are properly configured
+
+### Development Testing
+
+When making changes:
+1. Kill all servers (Step 1)
+2. Make your changes
+3. Restart all servers in order (Step 2)
+4. Test the application (Step 3)
 
 ## Testing Tools
 
