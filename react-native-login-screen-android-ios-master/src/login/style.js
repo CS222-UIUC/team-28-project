@@ -1,14 +1,25 @@
 const React = require("react-native");
-
 const { StyleSheet } = React;
 
 const styles = StyleSheet.create({
   containerView: {
     flex: 1,
-    alignItems: "center"
+    alignItems: "center",
   },
   loginScreenContainer: {
     flex: 1,
+    justifyContent: "center",
+  },
+  loginFormContainer: {
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    margin: 10,
   },
   logoText: {
     fontSize: 40,
@@ -16,9 +27,6 @@ const styles = StyleSheet.create({
     marginTop: 150,
     marginBottom: 30,
     textAlign: "center",
-  },
-  loginFormView: {
-    flex: 1,
   },
   loginFormTextInput: {
     height: 43,
@@ -37,12 +45,19 @@ const styles = StyleSheet.create({
     height: 45,
     marginTop: 10,
     width: 350,
-    alignItems: "center"
+    alignItems: "center",
   },
   fbLoginButton: {
     height: 45,
     marginTop: 10,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
+  },
+  forgotPasswordText: {
+    marginTop: 10,
+    color: "#3897f1",
+    textAlign: "center",
+    textDecorationLine: "underline",
   },
 });
+
 export default styles;

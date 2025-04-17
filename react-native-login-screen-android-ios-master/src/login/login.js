@@ -16,6 +16,7 @@ import * as Facebook from "expo-facebook";
 const appId = "1047121222092614";
 
 export default function LoginScreen() {
+  const [showPassword, setShowPassword] = useState(false);
   const onLoginPress = () => {};
 
   const onFbLoginPress = async () => {
@@ -40,11 +41,19 @@ export default function LoginScreen() {
     // }
   };
 
+  const onForgotPasswordPress = () => {
+    Alert.alert("Forgot Password", "Reset instructions have been sent to your email.");
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
     <KeyboardAvoidingView style={styles.containerView} behavior="padding">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.loginScreenContainer}>
-          <View style={styles.loginFormView}>
+          <View style={styles.loginFormContainer}>
             <Text style={styles.logoText}>Instamobile</Text>
             <TextInput
               placeholder="Username"
@@ -55,19 +64,27 @@ export default function LoginScreen() {
               placeholder="Password"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
-              secureTextEntry={true}
+              secureTextEntry={!showPassword}
             />
+            {/* Toggle show/hide password */}
+            <Text style={styles.forgotPasswordText} onPress={toggleShowPassword}>
+              {showPassword ? "Hide Password" : "Show Password"}
+            </Text>
             <Button
               buttonStyle={styles.loginButton}
-              onPress={() => onLoginPress()}
+              onPress={onLoginPress}
               title="Login"
             />
             <Button
               containerStyle={styles.fbLoginButton}
               type="clear"
-              onPress={() => onFbLoginPress()}
+              onPress={onFbLoginPress}
               title="Login With Facebook"
             />
+            {/* Forgot Password link */}
+            <Text style={styles.forgotPasswordText} onPress={onForgotPasswordPress}>
+              Forgot Password?
+            </Text>
           </View>
         </View>
       </TouchableWithoutFeedback>
