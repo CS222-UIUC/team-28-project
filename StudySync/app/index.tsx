@@ -1,18 +1,21 @@
-// app/index.tsx
-import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeScreen() {
+export default function IndexRedirect() {
   const router = useRouter();
 
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Welcome to My Calendar App</Text>
-      <Button 
-        title="Go to Login" 
-        onPress={() => router.push('/login')}
-      />
-    </View>
-  );
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        router.replace('/tabs/chat'); // ✅ Default tab after login
+      } else {
+        router.replace('/login');     // 🔐 Not logged in
+      }
+    };
+    checkAuth();
+  }, []);
+
+  return null;
 }
