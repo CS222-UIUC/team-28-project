@@ -181,4 +181,16 @@ python app/test_api_client.py
 ```
 This requires the server to be running (`python app/main.py --server`).
 
+### Running database:
 
+When you're in \backend folder, run node server.js. You should see:
+Server running on port 3000
+
+In a separate terminal:
+node testPost.js
+
+You should see something like:
+
+Insert debug: { data: [ { id: 1, user_id: '21d77745-c580-4b30-aac8-45a86fcb62e1', task: 'Meet', … } ], error: null }
+Status: 201
+Body: { id: 1, user_id: '21d77745-c580-4b30-aac8-45a86fcb62e1', task: 'Meet', … }
