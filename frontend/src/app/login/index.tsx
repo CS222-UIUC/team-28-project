@@ -11,7 +11,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.0.151:3000/login', { //when implementing, use your machine ip address to replace with the ip address here
+      const response = await fetch('http://localhost:3000/login', { //when implementing, use your machine ip address to replace with the ip address here
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

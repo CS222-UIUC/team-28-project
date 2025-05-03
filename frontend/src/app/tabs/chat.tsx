@@ -10,10 +10,14 @@ import {
   Platform,
   SafeAreaView,
 } from 'react-native';
+import TaskEditor, { TaskEntity } from '../../components/TaskEditor';
+import { authorizedFetch } from '../../utils/authfetch'; // 确保你有这个
+import TodayTaskSummary from '../../components/TodayTaskSummary';
 
 export default function ChatScreen() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ type: 'user' | 'bot'; text: string }[]>([]);
+  const [taskJson, setTaskJson] = useState<TaskEntity | null>(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -27,15 +31,38 @@ export default function ChatScreen() {
         body: JSON.stringify({ message: input }),
       });
       const data = await res.json();
+
       setMessages(prev => [
         ...prev,
-        { type: 'bot', text: `Added "${data.task}" on ${data.date} at ${data.time}` },
+        { type: 'bot', text: `Extracted "${data.task}" on ${data.date} at ${data.time}` },
       ]);
+
+      // 设置 JSON 数据用于编辑
+      setTaskJson(data);
+
     } catch {
       setMessages(prev => [...prev, { type: 'bot', text: '⚠️ Error reaching the server.' }]);
     }
 
     setInput('');
+  };
+
+  const handleSave = async () => {
+    if (!taskJson) return;
+    try {
+      const res = await authorizedFetch('http://localhost:8080/calendar/save_task', {
+        method: 'POST',
+        body: JSON.stringify(taskJson),
+      });
+      if (res.ok) {
+        alert('✅ Saved to database!');
+      } else {
+        alert('❌ Failed to save.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('❌ Network error while saving.');
+    }
   };
 
   return (
@@ -46,6 +73,7 @@ export default function ChatScreen() {
         keyboardVerticalOffset={90}
       >
         <FlatList
+          ListHeaderComponent={<TodayTaskSummary />}
           style={{ flex: 1 }}
           data={messages}
           keyExtractor={(_, i) => i.toString()}
@@ -60,6 +88,13 @@ export default function ChatScreen() {
             </Text>
           )}
         />
+        {taskJson && (
+          <View>
+            <TaskEditor initial={taskJson} onChange={setTaskJson} />
+            <Button title="Save to Database" onPress={handleSave} />
+            
+          </View>
+        )}
         <TextInput
           style={styles.input}
           value={input}
