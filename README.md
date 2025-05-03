@@ -1,196 +1,145 @@
-# NLP Task Calendar
+# NLP Task Manager
 
-A FastAPI application that processes natural language task descriptions, extracts relevant information (dates, times, participants, locations), and integrates with Google Calendar for event management.
-
-## Features
-
-- **Natural Language Processing**: Extract entities from text descriptions
-- **Task Management**: Convert natural language text into structured task data
-- **Calendar Integration**: Create, view, and manage events in Google Calendar
-- **RESTful API**: Well-structured API endpoints for all functionality
-- **Authentication**: Basic authentication for API access
+A modern task management application that uses natural language processing to help users organize their tasks and events.
 
 ## Project Structure
 
-The project follows a modular approach for better maintainability:
-
 ```
 team-28-project/
-├── app/                    # Backend FastAPI application
-│   ├── __init__.py
-│   ├── main.py            # Main FastAPI application
-│   ├── models/            # Data models
-│   │   ├── __init__.py
-│   │   └── models.py            # Pydantic models for data validation
-│   ├── routers/           # API route definitions
-│   │   ├── __init__.py
-│   │   ├── calendar_router.py   # Calendar management endpoints
-│   │   ├── login_router.py      # Authentication endpoints
-│   │   └── nlp_events.py        # Natural language processing endpoints
-│   ├── services/          # Service layer
-│   │   ├── __init__.py
-│   │   └── calendar_service.py  # Google Calendar integration
-│   └── utils/             # Utility functions
-│       ├── __init__.py
-│       └── server.py            # Server configuration utilities
-├── StudySync/             # Frontend React Native application
-│   ├── app/               # Expo Router app directory
-│   ├── backend/           # Authentication server
-│   └── assets/            # Static assets
-├── nlp/                   # NLP processing
-│   └── nlp.py                   # Entity extraction and text processing
-├── input.json                   # Sample input for testing
-├── output.json                  # Output from processing
-├── requirements.txt             # Python dependencies
-└── .env                         # Environment variables
+├── backend/
+│   ├── auth/           # Authentication server
+│   ├── database/       # Database server
+│   └── api/           # API server
+├── frontend/          # React Native frontend
+└── app/              # FastAPI backend
 ```
 
-## Testing Instructions
+## Prerequisites
 
-### Prerequisites
-- Node.js and npm installed
-- Python 3.x and pip installed
-- Virtual environment (recommended)
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+- Python 3.8 or higher
+- Expo CLI (`npm install -g expo-cli`)
 
-### Step 1: Kill Any Running Servers
-Before starting, ensure no conflicting servers are running:
+## Setup
+
+1. Clone the repository:
 ```bash
-# Kill any processes running on our ports
-pkill -f "node authServer.js"
-lsof -ti:3000,8080,8081 | xargs kill -9
+git clone [repository-url]
+cd team-28-project
 ```
 
-### Step 2: Start the Servers
-You need to run three servers in separate terminal windows:
-
-1. **Auth Server** (Terminal 1):
+2. Install backend dependencies:
 ```bash
-cd StudySync/backend
-node authServer.js
-```
-You should see: `Auth API running at http://localhost:3000`
-
-2. **FastAPI Backend** (Terminal 2):
-```bash
-cd app
-python main.py --server --port 8080
-```
-You should see: 
-```
-Starting server on http://127.0.0.1:8080
-INFO:     Started server process [xxxxx]
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
+cd backend
+npm install
 ```
 
-3. **Frontend Development Server** (Terminal 3):
+3. Install frontend dependencies:
 ```bash
-cd StudySync
+cd frontend
+npm install --legacy-peer-deps
+```
+
+4. Create `.env` file in the backend directory with the following content:
+```env
+# Supabase Configuration
+SUPABASE_URL=https://yqaxgrgxkwrmtukyyacs.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxYXhncmd4a3dybXR1a3l5YWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NTI5MjEsImV4cCI6MjA2MDQyODkyMX0.HmgFnGy2XrnCfy3lOIWx0krb_1Y-2OSboJfilp6_2To
+
+# Server Ports
+AUTH_PORT=3000
+API_PORT=8080
+DB_PORT=5432
+
+# JWT Secret
+JWT_SECRET=2SeaijQwTDidfocM2XTadiMIe2G63KR26jmB7/U9hoAPf485KO2sLJ7whf7nMFpfyAaTL2MP/RJv9TLX0VizRA==
+```
+
+## Running the Application
+
+You'll need to run three servers in separate terminal windows:
+
+1. Start the Auth Server:
+```bash
+cd backend
+node auth/server.js
+```
+This will start the authentication server on port 3000.
+
+2. Start the Database Server:
+```bash
+cd backend
+node database/server.js
+```
+This will start the database server on port 5432.
+
+3. Start the Frontend:
+```bash
+cd frontend
 npm start
 ```
+This will start the Expo development server. You can then:
+- Press `i` to open in iOS simulator
+- Press `a` to open in Android emulator
+- Press `w` to open in web browser
+- Scan the QR code with Expo Go app on your phone
 
-### Step 3: Launch the Application
+## Features
 
-After starting all servers, you have several options to run the application:
+- Natural Language Processing for task extraction
+- Task Management
+- User Authentication
+- Database Integration with Supabase
+- Modern UI with React Native
 
-1. **Web Browser (Recommended for testing):**
-   - When the Expo server starts, press `w` to open in web browser
-   - The app will open at http://localhost:8081
+## Development
 
-2. **iOS Simulator:**
-   - Press `i` to open iOS simulator options
-   - Select your preferred device (e.g., "iPhone SE (3rd generation)")
+- Backend API runs on port 8080
+- Auth server runs on port 3000
+- Database server runs on port 5432
+- Frontend development server runs on port 8081
 
-3. **Android Emulator:**
-   - Press `a` to open in Android emulator
-   - Make sure you have an Android emulator running
+## Troubleshooting
 
-### Step 4: Verify Everything is Running
+### Common Issues
 
-1. **Check Auth Server:**
-```bash
-curl http://localhost:3000
-```
+1. **Port Conflicts**:
+   ```bash
+   # Kill any processes running on our ports
+   lsof -ti:3000,8080,8081,5432 | xargs kill -9
+   ```
 
-2. **Check FastAPI Server:**
-```bash
-curl http://localhost:8080
-```
-Should return: `{"message":"NLP Task Calendar API is running"}`
+2. **Database Connection Issues**:
+   - Verify PostgreSQL is running
+   - Check database credentials in `.env`
+   - Ensure the database server is running
 
-3. **Check Frontend:**
-- Open http://localhost:8081 in your browser
-- You should see the login page
+3. **Authentication Issues**:
+   - Clear browser cache and local storage
+   - Verify JWT_SECRET in `.env`
+   - Check auth service logs
 
-### Troubleshooting
+4. **Frontend Issues**:
+   - Clear npm cache: `npm cache clean --force`
+   - Remove node_modules and reinstall
+   - Check Expo logs for errors
 
-If you encounter any issues:
-
-1. **Port Conflicts:**
-   - Follow Step 1 to kill all running servers
-   - Restart the servers in order (auth → FastAPI → frontend)
-
-2. **Authentication Issues:**
-   - Clear your browser cache and local storage
-   - Try logging out and logging back in
-
-3. **Server Connection Issues:**
-   - Verify all three servers are running in separate terminals
-   - Check console logs for any error messages
-   - Ensure you're using `localhost` not IP addresses
-
-4. **Common Fixes:**
-   - If the frontend doesn't load: try clearing npm cache (`npm cache clean --force`)
-   - If backend fails: check Python virtual environment is activated
-   - If auth fails: verify Google OAuth credentials are properly configured
-
-### Development Testing
+## Development
 
 When making changes:
-1. Kill all servers (Step 1)
+1. Kill all running servers
 2. Make your changes
-3. Restart all servers in order (Step 2)
-4. Test the application (Step 3)
+3. Restart all servers in order (auth → api → db → frontend)
+4. Test the application
 
-## Testing Tools
+## Contributing
 
-The project includes several tools for testing and troubleshooting:
+1. Create a new branch for your feature
+2. Make your changes
+3. Test thoroughly
+4. Submit a pull request
 
-### 1. Simple NLP Testing
+## License
 
-Test NLP functionality without Google Calendar integration:
-```bash
-python app/test_simple_nlp.py
-```
-
-### 2. Google OAuth Troubleshooter
-
-Fix Google Calendar authentication issues, especially for the "redirect_uri_mismatch" error:
-```bash
-python app/fix_google_oauth.py
-```
-- Identify redirect URI issues
-- Test authentication with different URIs
-- Provides step-by-step guidance for fixing authentication problems
-
-### 3. API Client
-
-Test the full API with both text processing and calendar event creation:
-```bash
-python app/test_api_client.py
-```
-This requires the server to be running (`python app/main.py --server`).
-
-### Running database:
-
-When you're in \backend folder, run node server.js. You should see:
-Server running on port 3000
-
-In a separate terminal:
-node testPost.js
-
-You should see something like:
-
-Insert debug: { data: [ { id: 1, user_id: '21d77745-c580-4b30-aac8-45a86fcb62e1', task: 'Meet', … } ], error: null }
-Status: 201
-Body: { id: 1, user_id: '21d77745-c580-4b30-aac8-45a86fcb62e1', task: 'Meet', … }
+This project is licensed under the MIT License - see the LICENSE file for details.

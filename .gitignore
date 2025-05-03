@@ -1,12 +1,24 @@
-venv
+# Dependencies
+node_modules/
+venv/
 .env
-output.json
-node_modules
-StudySync/node_modules
-.expo
+
+# Build
+dist/
+build/
 .expo/
-.expo/cache
-.expo/cache/
-.expo/cache/
-.expo/cache/
-.expo/cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+*.log
+
+# Testing
+coverage/
+
+# Misc
+*.swp
+*.swo
