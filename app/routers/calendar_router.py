@@ -167,3 +167,22 @@ async def create_from_nlp(text: str = Body(..., embed=True)):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create event from text: {str(e)}") 
+
+###########################################################edit and save############################
+
+# @router.post("/save_task")
+# async def save_task(task: TaskEvent, user: User = Depends(get_current_user)):
+#     """
+#     Accept a TaskEvent JSON, verify user from token, and save task (e.g. to DB).
+#     """
+#     try:
+#         # Mock behavior: just print for now
+#         print("✅ Saving task for:", user.email)
+#         print("📝 Task JSON:", task.dict())
+
+#         # 👉 如果你有 DB，这里可以保存 task + user.id
+#         # db.save_task(user_id=user.id, task_data=task.dict())
+
+#         return {"message": "Task saved successfully"}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Failed to save task: {str(e)}")

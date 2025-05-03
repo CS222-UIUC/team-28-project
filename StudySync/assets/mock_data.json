@@ -1,0 +1,23 @@
+{
+    "2025-04-17": [
+      {
+        "task": "Meet",
+        "participants": ["John"],
+        "date": "2025-04-17",
+        "time": "14:00",
+        "end_time": null,
+        "locations": []
+      }
+    ],
+    "2025-04-20": [
+      {
+        "task": "Call",
+        "participants": ["Mom"],
+        "date": "2025-04-20",
+        "time": "20:00",
+        "end_time": null,
+        "locations": []
+      }
+    ]
+  }
+  
