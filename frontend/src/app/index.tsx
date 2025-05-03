@@ -1,20 +1,21 @@
-import { Stack } from 'expo-router';
-import React from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function RootLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: '#f4511e' },
-        headerTintColor: '#fff',
-      }}
-    >
-      {/* These routes will use Stack headers by default */}
-      <Stack.Screen name="login/index" options={{ headerShown: false }} />
-      <Stack.Screen name="signup/index" options={{ headerShown: false }} />
+export default function IndexRedirect() {
+  const router = useRouter();
 
-      {/* The tabs layout will manage its own headers */}
-      <Stack.Screen name="tabs" options={{ headerShown: false }} />
-    </Stack>
-  );
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        router.replace('/tabs/chat'); // ✅ Default tab after login
+      } else {
+        router.replace('/login');     // 🔐 Not logged in
+      }
+    };
+    checkAuth();
+  }, []);
+
+  return null;
 }

@@ -3,47 +3,8 @@ import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, useWindowDimensions,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import rawMock from '../../assets/mock_data.json';
-const mockData = rawMock as Record<string, TaskEvent[]>;
-type TaskEvent = {
-  task: string;
-  participants: string[];
-  date: string;
-  time: string | null;
-  end_time: string | null;
-  locations: string[];
-};
-
-/** Use the following code for FastAPI connection
- 
- * import { getTodosByDate } from '../../api/todo';
-
-useEffect(() => {
-  if (!selected) return;
-
-  const dateStr = fmt(selected, 'yyyy-MM-dd');
-  setLoading(true);       // Start loading state
-  setEvents(null);        // Clear previous events
-
-  // Fetch todo events for the selected date
-  getTodosByDate(dateStr)
-    .then(data => {
-      // Format each TaskEvent object into a user-friendly string
-      const formatted = data.map(ev => {
-        const time = ev.time || 'unspecified';
-        const people = ev.participants.join(', ') || 'nobody';
-        const place = ev.locations.length > 0 ? ` at ${ev.locations.join(', ')}` : '';
-        return `${ev.task} with ${people} at ${time}${place}`;
-      });
-      setEvents(formatted); // Update state with formatted event strings
-    })
-    .catch(() => setEvents([])) // On error, show no events
-    .finally(() => setLoading(false)); // End loading state
-}, [selected]); // Run this effect whenever a new date is selected
-
- */
-
-
+import { getTodosByDate } from '../../api/todo';
+import { TaskEvent } from '../../api/types';
 
 const MONTH = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -86,6 +47,7 @@ export default function CalendarScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [events, setEvents] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { width } = useWindowDimensions();
 
   const cellMargin = 2;
@@ -105,24 +67,26 @@ export default function CalendarScreen() {
     const dateStr = fmt(selected, 'yyyy-MM-dd');
     setLoading(true);
     setEvents(null);
+    setError(null);
 
-    setTimeout(() => {
-      const rawEvents = mockData[dateStr];
-
-      if (rawEvents && Array.isArray(rawEvents)) {
-        const formatted = rawEvents.map(ev => {
+    getTodosByDate(dateStr)
+      .then(data => {
+        const formatted = data.map(ev => {
           const time = ev.time || 'unspecified';
           const people = ev.participants?.join(', ') || 'nobody';
           const place = ev.locations?.length ? ` at ${ev.locations.join(', ')}` : '';
           return `${ev.task} with ${people} at ${time}${place}`;
         });
         setEvents(formatted);
-      } else {
+      })
+      .catch(err => {
+        console.error('Error fetching events:', err);
+        setError('Failed to load events. Please try again.');
         setEvents([]);
-      }
-
-      setLoading(false);
-    }, 300); // 模拟网络延迟
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [selected]);
 
   return (
@@ -186,6 +150,8 @@ export default function CalendarScreen() {
           </Text>
           {loading ? (
             <Text>Loading...</Text>
+          ) : error ? (
+            <Text style={{ color: '#ef4444' }}>{error}</Text>
           ) : events && events.length > 0 ? (
             events.map((e, i) => <Text key={i}>• {e}</Text>)
           ) : (
@@ -199,28 +165,45 @@ export default function CalendarScreen() {
 
 const Arrow = ({ text, onPress }: { text: string; onPress: () => void }) => (
   <TouchableOpacity onPress={onPress} style={styles.arrow}>
-    <Text style={styles.arrowTxt}>{text}</Text>
+    <Text style={styles.arrowText}>{text}</Text>
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#fff' },
+  root: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   header: {
-    backgroundColor: '#f4511e',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 16,
   },
-  headerTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
   arrow: {
-    width: 32, height: 32, borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center', justifyContent: 'center',
+    padding: 8,
   },
-  arrowTxt: { color: '#fff', fontSize: 18, fontWeight: '600', marginTop: -2 },
-  weekRow: { flexDirection: 'row' },
-  weekTxt: { textAlign: 'center', fontSize: 12, fontWeight: '600' },
-  dayCell: { alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
+  arrowText: {
+    fontSize: 24,
+    color: '#0ea5e9',
+  },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  weekTxt: {
+    textAlign: 'center',
+    color: '#6b7280',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  dayCell: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
 });

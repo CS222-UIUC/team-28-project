@@ -1,0 +1,17 @@
+{
+    "results": [
+        {
+            "original_text": "meeting with Nhi at 2pm today",
+            "extracted_entities": {
+                "task": "Meet",
+                "participants": [
+                    "Nhi"
+                ],
+                "date": "2025-05-03",
+                "time": "14:00",
+                "end_time": null,
+                "locations": []
+            }
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
+import React from 'react';
 import { AuthProvider } from '../context/AuthContext';
 import { ProtectedRoute } from '../components/ProtectedRoute';
-import { Platform } from 'react-native';
 
 export default function RootLayout() {
   return (
@@ -11,48 +11,14 @@ export default function RootLayout() {
           screenOptions={{
             headerStyle: { backgroundColor: '#f4511e' },
             headerTintColor: '#fff',
-            ...(Platform.OS === 'web' && {
-              headerShown: true,
-              headerStyle: {
-                backgroundColor: '#f4511e',
-                height: 60,
-              },
-            }),
           }}
         >
-          <Stack.Screen 
-            name="index" 
-            options={{ 
-              headerShown: false,
-            }} 
-          />
-          <Stack.Screen 
-            name="login" 
-            options={{ 
-              headerShown: false,
-              ...(Platform.OS === 'web' && {
-                path: '/login',
-              }),
-            }} 
-          />
-          <Stack.Screen 
-            name="signup" 
-            options={{ 
-              headerShown: false,
-              ...(Platform.OS === 'web' && {
-                path: '/signup',
-              }),
-            }} 
-          />
-          <Stack.Screen 
-            name="tabs" 
-            options={{ 
-              headerShown: false,
-              ...(Platform.OS === 'web' && {
-                path: '/tabs',
-              }),
-            }} 
-          />
+          {/* These routes will use Stack headers by default */}
+          <Stack.Screen name="login/index" options={{ headerShown: false }} />
+          <Stack.Screen name="signup/index" options={{ headerShown: false }} />
+
+          {/* The tabs layout will manage its own headers */}
+          <Stack.Screen name="tabs" options={{ headerShown: false }} />
         </Stack>
       </ProtectedRoute>
     </AuthProvider>

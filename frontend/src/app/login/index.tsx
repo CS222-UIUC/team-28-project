@@ -1,66 +1,66 @@
 // app/login/index.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
     try {
-      const response = await fetch('http://localhost:3000/login', { //when implementing, use your machine ip address to replace with the ip address here
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        alert(data.message || 'Login failed');
+      if (error) {
+        Alert.alert('Login failed', error.message);
         return;
       }
-      await AsyncStorage.setItem('authToken', data.token);
-  
-      console.log('Login successful, token:', data.token);
-  
-      // Navigate to your home screen
-      router.push('/tabs/chat');
+      // Login successful, session is managed by Supabase
+      if (Platform.OS === 'web') {
+        window.location.href = '/tabs/chat';
+      } else {
+        router.push('/tabs/chat');
+      }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Something went wrong');
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login to Your Calendar</Text>
-      
+      <Text style={styles.title}>Login to StudySync</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
         autoCapitalize="none"
         value={email}
-        onChangeText={(text) => setEmail(text)}
+        onChangeText={setEmail}
+        editable={!loading}
+        keyboardType="email-address"
       />
-      
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry
         value={password}
-        onChangeText={(text) => setPassword(text)}
+        onChangeText={setPassword}
+        editable={!loading}
       />
-      
-      <Button title="Login" onPress={handleLogin} />
-      <Button title="Don't have an account? Sign up" onPress={() => router.push('/signup')}/>
-
+      <Button title={loading ? 'Logging in...' : 'Login'} onPress={handleLogin} disabled={loading} />
+      <Button title="Don't have an account? Sign up" onPress={() => router.push('/signup')} disabled={loading}/>
     </View>
   );
 }

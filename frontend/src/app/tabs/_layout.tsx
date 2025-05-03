@@ -1,15 +1,15 @@
-
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Button } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
 
 export default function TabLayout() {
   const router = useRouter();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('authToken');
+    await signOut();
     router.replace('/login');
   };
 

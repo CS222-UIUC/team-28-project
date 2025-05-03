@@ -7,11 +7,39 @@ A modern task management application that uses natural language processing to he
 ```
 team-28-project/
 ├── backend/
-│   ├── auth/           # Authentication server
-│   ├── database/       # Database server
-│   └── api/           # API server
-├── frontend/          # React Native frontend
-└── app/              # FastAPI backend
+│   ├── api/              # Node.js API server (main backend)
+│   │   ├── server.cjs
+│   │   └── ...           # Other API files
+│   ├── nlp/              # Python NLP logic
+│   │   ├── nlp.py
+│   │   └── ...
+│   ├── routers/          # FastAPI routers
+│   │   ├── nlp_events.py
+│   │   └── ...
+│   ├── models/           # Python models (if used)
+│   ├── services/         # Python services (if used)
+│   ├── utils/            # Python utilities (if used)
+│   ├── main.py           # FastAPI app entrypoint
+│   ├── requirements.txt  # Python dependencies
+│   ├── package.json      # Node.js dependencies for backend
+│   ├── package-lock.json
+│   └── .env              # Backend environment variables (not committed)
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── api/
+│   │   ├── utils/
+│   │   └── ...
+│   ├── assets/           # Images, fonts, etc.
+│   ├── App.js            # Expo entrypoint
+│   ├── app.json          # Expo config
+│   ├── package.json      # Frontend dependencies
+│   ├── package-lock.json
+│   └── .env              # Frontend environment variables (not committed)
+├── README.md
+├── .gitignore
+└── scripts/              # Utility scripts (if any)
 ```
 
 ## Prerequisites
@@ -19,127 +47,81 @@ team-28-project/
 - Node.js (v14 or higher)
 - npm (v6 or higher)
 - Python 3.8 or higher
+- pip
 - Expo CLI (`npm install -g expo-cli`)
 
 ## Setup
 
-1. Clone the repository:
+### 1. Clone the repository
 ```bash
 git clone [repository-url]
 cd team-28-project
 ```
 
-2. Install backend dependencies:
+### 2. Install backend dependencies
 ```bash
 cd backend
-npm install
+npm install # For Node.js API
+cd ../frontend
+npm install # For frontend
+cd ../backend
+pip install -r requirements.txt # For FastAPI NLP (if requirements.txt exists)
+# Or manually install:
+pip install fastapi uvicorn spacy dateparser
+python -m spacy download en_core_web_sm
 ```
 
-3. Install frontend dependencies:
-```bash
-cd frontend
-npm install --legacy-peer-deps
-```
-
-4. Create `.env` file in the backend directory with the following content:
+### 3. Environment Variables
+Create a `.env` file in the `backend` directory with the following content:
 ```env
-# Supabase Configuration
-SUPABASE_URL=https://yqaxgrgxkwrmtukyyacs.supabase.co
-SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxYXhncmd4a3dybXR1a3l5YWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NTI5MjEsImV4cCI6MjA2MDQyODkyMX0.HmgFnGy2XrnCfy3lOIWx0krb_1Y-2OSboJfilp6_2To
-
-# Server Ports
-AUTH_PORT=3000
-API_PORT=8080
-DB_PORT=5432
-
-# JWT Secret
-JWT_SECRET=2SeaijQwTDidfocM2XTadiMIe2G63KR26jmB7/U9hoAPf485KO2sLJ7whf7nMFpfyAaTL2MP/RJv9TLX0VizRA==
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+JWT_SECRET=your_jwt_secret
 ```
 
 ## Running the Application
 
-You'll need to run three servers in separate terminal windows:
+You need to run **three servers** in separate terminal windows:
 
-1. Start the Auth Server:
+### 1. Start the FastAPI NLP Server
 ```bash
 cd backend
-node auth/server.js
+uvicorn main:app --reload --port 8080
 ```
-This will start the authentication server on port 3000.
+- This will start the FastAPI NLP service on port 8080.
+- Test it: [http://localhost:8080](http://localhost:8080)
 
-2. Start the Database Server:
+### 2. Start the Node.js API Server
 ```bash
-cd backend
-node database/server.js
+cd backend/api
+node server.cjs
 ```
-This will start the database server on port 5432.
+- This will start the Node.js backend on port 3000.
+- Test it: [http://localhost:3000](http://localhost:3000)
 
-3. Start the Frontend:
+### 3. Start the Frontend (Expo)
 ```bash
 cd frontend
 npm start
 ```
-This will start the Expo development server. You can then:
-- Press `i` to open in iOS simulator
-- Press `a` to open in Android emulator
-- Press `w` to open in web browser
-- Scan the QR code with Expo Go app on your phone
+- This will start the Expo development server.
+- You can then:
+  - Press `i` to open in iOS simulator
+  - Press `a` to open in Android emulator
+  - Press `w` to open in web browser
 
-## Features
-
-- Natural Language Processing for task extraction
-- Task Management
-- User Authentication
-- Database Integration with Supabase
-- Modern UI with React Native
-
-## Development
-
-- Backend API runs on port 8080
-- Auth server runs on port 3000
-- Database server runs on port 5432
-- Frontend development server runs on port 8081
+## Testing the Integration
+- Use the chat UI in the frontend to enter a natural language task (e.g., "meeting with Tom at 2pm Sunday").
+- The frontend will send the request to the Node.js backend, which will call the FastAPI NLP service and return extracted task details.
 
 ## Troubleshooting
-
-### Common Issues
-
-1. **Port Conflicts**:
-   ```bash
-   # Kill any processes running on our ports
-   lsof -ti:3000,8080,8081,5432 | xargs kill -9
-   ```
-
-2. **Database Connection Issues**:
-   - Verify PostgreSQL is running
-   - Check database credentials in `.env`
-   - Ensure the database server is running
-
-3. **Authentication Issues**:
-   - Clear browser cache and local storage
-   - Verify JWT_SECRET in `.env`
-   - Check auth service logs
-
-4. **Frontend Issues**:
-   - Clear npm cache: `npm cache clean --force`
-   - Remove node_modules and reinstall
-   - Check Expo logs for errors
-
-## Development
-
-When making changes:
-1. Kill all running servers
-2. Make your changes
-3. Restart all servers in order (auth → api → db → frontend)
-4. Test the application
-
-## Contributing
-
-1. Create a new branch for your feature
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
+- If you get a 500 error from `/tasks/nlp`, make sure both the Node.js and FastAPI servers are running.
+- If you see Python import errors, check that you are in the correct directory and all dependencies are installed.
+- If you see CORS errors, make sure CORS is enabled in both backend servers.
+- **To kill any processes running on ports 3000, 8080, 8081, or 5432:**
+  ```bash
+  lsof -ti:3000,8080,8081,5432 | xargs kill -9
+  ```
 
 ## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT

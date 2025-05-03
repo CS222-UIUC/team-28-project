@@ -20,13 +20,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function initializeAuth() {
       try {
-        // Force sign out first
-        await supabase.auth.signOut();
-        console.log('Forced sign out completed');
-        
-        // Clear any stored session
-        setSession(null);
-        setLoading(false);
+        // Get initial session
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (mounted) {
+          setSession(initialSession);
+          setLoading(false);
+        }
       } catch (error) {
         console.error('Error during initialization:', error);
         if (mounted) {
