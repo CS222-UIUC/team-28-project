@@ -1,14 +1,14 @@
 {
     "results": [
         {
-            "original_text": "meeting with Nhi at 2pm today",
+            "original_text": "Cafe Bene",
             "extracted_entities": {
-                "task": "Meet",
+                "task": "Task",
                 "participants": [
-                    "Nhi"
+                    "Cafe Bene"
                 ],
-                "date": "2025-05-03",
-                "time": "14:00",
+                "date": null,
+                "time": null,
                 "end_time": null,
                 "locations": []
             }

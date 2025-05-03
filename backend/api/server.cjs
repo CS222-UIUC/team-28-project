@@ -179,10 +179,19 @@ app.post('/tasks/nlp', async (req, res) => {
     const fastApiResponse = await axios.post('http://localhost:8080/nlp/process', { tasks: [{ text }] });
     const extracted = fastApiResponse.data.results[0].extracted_entities;
 
+    // Check for missing fields
+    const missingFields = [];
+    if (!extracted.task) missingFields.push('task');
+    if (!extracted.date) missingFields.push('date');
+    if (!extracted.time) missingFields.push('time');
+    if (!extracted.participants.length) missingFields.push('participants');
+    if (!extracted.locations.length) missingFields.push('locations');
+
     res.status(200).json({
       message: 'NLP extraction successful',
       extracted,
-      missingFields: ['task', 'date', 'time'].filter(field => !extracted[field])
+      missingFields,
+      needsUserInput: missingFields.length > 0
     });
   } catch (error) {
     console.error('NLP processing error:', error);

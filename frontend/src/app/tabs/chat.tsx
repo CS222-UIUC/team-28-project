@@ -17,11 +17,28 @@ type Message = {
   timestamp: Date;
 };
 
+type TaskState = {
+  task: string | null;
+  date: string | null;
+  time: string | null;
+  participants: string[];
+  locations: string[];
+  currentMissingField: string | null;
+};
+
 export default function ChatScreen() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const { session } = useAuth();
+  const [taskState, setTaskState] = useState<TaskState>({
+    task: null,
+    date: null,
+    time: null,
+    participants: [],
+    locations: [],
+    currentMissingField: null,
+  });
 
   const handleSend = async () => {
     if (!input.trim() || !session?.user?.id) return;
@@ -38,35 +55,122 @@ export default function ChatScreen() {
     setInput('');
 
     try {
-      console.log('Sending to NLP API:', userMessage.text, session.user.id);
-      const response: any = await createTaskFromText(userMessage.text, session.user.id);
-      console.log('NLP API response:', response);
-      if (response && (response.extracted || response.extracted_info)) {
+      // If we're asking for a specific field, update that field
+      if (taskState.currentMissingField) {
+        // Process the response through NLP to extract entities
+        const response: any = await createTaskFromText(input, session.user.id);
         const extracted = response.extracted || response.extracted_info;
-        setMessages(prev => [
-          ...prev,
-          {
-            text: `I found these details:\n${buildExtractedMessage(extracted, response.missingFields || [])}`,
-            isUser: false,
-            timestamp: new Date(),
-          },
-        ]);
+        
+        const updatedState = { ...taskState };
+        switch (taskState.currentMissingField) {
+          case 'task':
+            updatedState.task = extracted.task || input;
+            break;
+          case 'date':
+            updatedState.date = extracted.date || input;
+            break;
+          case 'time':
+            updatedState.time = extracted.time || input;
+            break;
+          case 'participants':
+            if (extracted.participants?.length) {
+              updatedState.participants = [...updatedState.participants, ...extracted.participants];
+            } else {
+              updatedState.participants = [...updatedState.participants, input];
+            }
+            break;
+          case 'locations':
+            if (extracted.locations?.length) {
+              updatedState.locations = [...updatedState.locations, ...extracted.locations];
+            } else {
+              updatedState.locations = [...updatedState.locations, input];
+            }
+            break;
+        }
+        setTaskState(updatedState);
+        
+        // Find next missing field
+        const nextMissingField = findNextMissingField(updatedState);
+        setTaskState(prev => ({ ...prev, currentMissingField: nextMissingField }));
+        
+        // Add system response
+        if (nextMissingField) {
+          setMessages(prev => [
+            ...prev,
+            {
+              text: getFieldPrompt(nextMissingField),
+              isUser: false,
+              timestamp: new Date(),
+            },
+          ]);
+        } else {
+          // All fields are filled, show summary
+          setMessages(prev => [
+            ...prev,
+            {
+              text: `Great! Here's your complete task:${buildExtractedMessage(updatedState)}`,
+              isUser: false,
+              timestamp: new Date(),
+            },
+          ]);
+        }
       } else {
-        console.log('No extracted info found in response:', response);
-        setMessages(prev => [
-          ...prev,
-          {
-            text: "I couldn't find any details in your message. Could you please provide the task details?",
-            isUser: false,
-            timestamp: new Date(),
-          },
-        ]);
+        // Initial task processing
+        console.log('Sending to NLP API:', userMessage.text, session.user.id);
+        const response: any = await createTaskFromText(userMessage.text, session.user.id);
+        console.log('NLP API response:', response);
+        
+        if (response && (response.extracted || response.extracted_info)) {
+          const extracted = response.extracted || response.extracted_info;
+          const missingFields = response.missingFields || [];
+          
+          // Update task state with extracted information
+          setTaskState({
+            task: extracted.task || null,
+            date: extracted.date || null,
+            time: extracted.time || null,
+            participants: extracted.participants || [],
+            locations: extracted.locations || [],
+            currentMissingField: missingFields[0] || null,
+          });
+          
+          let messageText = '';
+          const foundInfo = buildExtractedMessage(extracted);
+          if (foundInfo) {
+            messageText = `I found these details:${foundInfo}`;
+          }
+          
+          // If there are missing fields, ask for the first one
+          if (missingFields.length > 0) {
+            if (messageText) messageText += '\n\n';
+            messageText += getFieldPrompt(missingFields[0]);
+          }
+          
+          setMessages(prev => [
+            ...prev,
+            {
+              text: messageText || "I couldn't find any details. What is the task?",
+              isUser: false,
+              timestamp: new Date(),
+            },
+          ]);
+        } else {
+          console.log('No extracted info found in response:', response);
+          setMessages(prev => [
+            ...prev,
+            {
+              text: "I couldn't find any details. What is the task?",
+              isUser: false,
+              timestamp: new Date(),
+            },
+          ]);
+        }
       }
     } catch (error) {
       setMessages(prev => [
         ...prev,
         {
-          text: "I couldn't find any details in your message. Could you please provide the task details?",
+          text: "I couldn't find any details. What is the task?",
           isUser: false,
           timestamp: new Date(),
         },
@@ -76,14 +180,42 @@ export default function ChatScreen() {
     }
   };
 
+  // Helper to find the next missing field
+  function findNextMissingField(state: TaskState): string | null {
+    if (!state.task) return 'task';
+    if (!state.date) return 'date';
+    if (!state.time) return 'time';
+    if (state.participants.length === 0) return 'participants';
+    if (state.locations.length === 0) return 'locations';
+    return null;
+  }
+
+  // Helper to get prompt for a specific field
+  function getFieldPrompt(field: string): string {
+    switch (field) {
+      case 'task':
+        return 'What would you like to do?';
+      case 'date':
+        return 'What date is this for?';
+      case 'time':
+        return 'What time would you like to schedule this for?';
+      case 'participants':
+        return 'Who would you like to include?';
+      case 'locations':
+        return 'Where would you like to meet?';
+      default:
+        return '';
+    }
+  }
+
   // Helper to build a message showing extracted fields
-  function buildExtractedMessage(extracted: any, missingFields: string[]) {
+  function buildExtractedMessage(extracted: any) {
     let msg = '';
-    msg += `\n- Task: "${extracted.task || '(missing)'}"`;
-    msg += `\n- Date: ${extracted.date || '(missing)'}`;
-    msg += `\n- Time: ${extracted.time || '(missing)'}`;
-    msg += `\n- Participants: ${extracted.participants?.join(', ') || 'None'}`;
-    msg += `\n- Locations: ${extracted.locations?.join(', ') || 'None'}`;
+    if (extracted.task) msg += `\n- Task: "${extracted.task}"`;
+    if (extracted.date) msg += `\n- Date: ${extracted.date}`;
+    if (extracted.time) msg += `\n- Time: ${extracted.time}`;
+    if (extracted.participants?.length) msg += `\n- Participants: ${extracted.participants.join(', ')}`;
+    if (extracted.locations?.length) msg += `\n- Locations: ${extracted.locations.join(', ')}`;
     return msg;
   }
 
