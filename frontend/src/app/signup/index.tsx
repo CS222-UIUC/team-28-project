@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -58,96 +60,149 @@ export default function SignupScreen() {
     }
   };
 
-  const handleLogin = () => {
-    if (Platform.OS === 'web') {
-      window.location.href = '/login';
-    } else {
-      router.replace('/login');
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create a StudySync Account</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-        editable={!loading}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        editable={!loading}
-      />
-      <TouchableOpacity 
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSignup}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Creating Account..." : "Sign Up"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={[styles.button, styles.secondaryButton]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        <Text style={styles.secondaryButtonText}>
-          Already have an account? Login
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <ImageBackground
+      source={require('../../../assets/images/mountain-silhouette.jpg')}
+      style={styles.purpleBackground}
+      resizeMode="cover"
+      imageStyle={styles.backgroundImage}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.centeredContainer}>
+          <BlurView intensity={60} tint="dark" style={styles.glassCard}>
+            <Text style={styles.title}>StudySync</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                editable={!loading}
+                keyboardType="email-address"
+                placeholderTextColor="#fff"
+              />
+              <Ionicons name="mail-outline" size={22} color="#fff" style={styles.inputIconRight} />
+            </View>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                editable={!loading}
+                placeholderTextColor="#fff"
+              />
+              <Ionicons name="lock-closed-outline" size={22} color="#fff" style={styles.inputIconRight} />
+            </View>
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              <Text style={styles.loginButtonText}>{loading ? 'Creating Account...' : 'Sign Up'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.registerLink}
+              onPress={() => router.push('/login')}
+              disabled={loading}
+            >
+              <Text style={styles.registerText}>Already have an account? <Text style={{ color: '#b3c6ff', textDecorationLine: 'underline' }}>Login</Text></Text>
+            </TouchableOpacity>
+          </BlurView>
+        </View>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  purpleBackground: {
     flex: 1,
-    padding: 24,
+    width: '100%',
+    height: '100%',
+  },
+  backgroundImage: {
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  centeredContainer: {
+    flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  glassCard: {
+    width: 440,
+    padding: 40,
+    borderRadius: 28,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    alignItems: 'stretch',
   },
   title: {
-    fontSize: 24,
-    marginBottom: 16,
-    textAlign: 'center',
+    fontSize: 38,
     fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 32,
+    letterSpacing: 1,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 22,
+    marginBottom: 20,
+    paddingHorizontal: 18,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
-    marginVertical: 8,
-    borderRadius: 4,
-  },
-  button: {
-    backgroundColor: '#f4511e',
-    padding: 15,
-    borderRadius: 4,
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
+    flex: 1,
+    height: 54,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  secondaryButton: {
+    fontSize: 18,
     backgroundColor: 'transparent',
+    outline: 'none',
   },
-  secondaryButtonText: {
-    color: '#f4511e',
+  inputIconRight: {
+    marginLeft: 8,
+  },
+  loginButton: {
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 14,
+    marginTop: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  loginButtonText: {
+    color: '#6a11cb',
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  registerLink: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  registerText: {
+    color: '#e0e0ff',
     fontSize: 16,
+    textAlign: 'center',
   },
 });

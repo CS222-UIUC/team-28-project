@@ -7,9 +7,11 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { createTaskFromText } from '../../api/todo';
 import { useAuth } from '../../context/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 
 type Message = {
   text: string;
@@ -180,6 +182,19 @@ export default function ChatScreen() {
     }
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setInput('');
+    setTaskState({
+      task: null,
+      date: null,
+      time: null,
+      participants: [],
+      locations: [],
+      currentMissingField: null,
+    });
+  };
+
   // Helper to find the next missing field
   function findNextMissingField(state: TaskState): string | null {
     if (!state.task) return 'task';
@@ -221,37 +236,49 @@ export default function ChatScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>💬 Chat with Task Assistant</Text>
-      <Text style={styles.subheader}>Type your task in natural language</Text>
-      
-      <ScrollView style={styles.messagesContainer}>
-        {messages.map((message, index) => (
-          <View
-            key={index}
-            style={[
-              styles.messageBubble,
-              message.isUser ? styles.userMessage : styles.systemMessage,
-            ]}
-          >
-            <Text style={[
-              styles.messageText,
-              message.isUser ? styles.userMessageText : styles.systemMessageText
-            ]}>
-              {message.text}
-            </Text>
-            <Text style={styles.timestamp}>
-              {message.timestamp.toLocaleTimeString()}
-            </Text>
+      {messages.length === 0 ? (
+        <View style={styles.welcomeContainer}>
+          <Image source={require('../../../assets/images/icon.png')} style={styles.logo} />
+          <Text style={styles.welcomeTitle}>Hi, I'm StudySync.</Text>
+          <Text style={styles.welcomeSubtitle}>What are you up to?</Text>
+        </View>
+      ) : (
+        <>
+          <ScrollView style={styles.messagesContainer}>
+            {messages.map((message, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.messageBubble,
+                  message.isUser ? styles.userMessage : styles.systemMessage,
+                ]}
+              >
+                <Text style={[
+                  styles.messageText,
+                  message.isUser ? styles.userMessageText : styles.systemMessageText
+                ]}>
+                  {message.text}
+                </Text>
+                <Text style={styles.timestamp}>
+                  {message.timestamp.toLocaleTimeString()}
+                </Text>
+              </View>
+            ))}
+            {loading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" />
+                <Text style={styles.loadingText}>Processing...</Text>
+              </View>
+            )}
+          </ScrollView>
+          <View style={styles.newChatBarBottom}>
+            <TouchableOpacity style={styles.newChatButton} onPress={handleNewChat}>
+              <Ionicons name="chatbubble-ellipses-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.newChatText}>New chat</Text>
+            </TouchableOpacity>
           </View>
-        ))}
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" />
-            <Text style={styles.loadingText}>Processing...</Text>
-          </View>
-        )}
-      </ScrollView>
-
+        </>
+      )}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -276,92 +303,142 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subheader: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
+    backgroundColor: '#181A20',
+    padding: 0,
   },
   messagesContainer: {
     flex: 1,
-    marginBottom: 16,
+    marginBottom: 24,
+    paddingHorizontal: 18,
   },
   messageBubble: {
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 8,
-    maxWidth: '80%',
+    padding: 21,
+    borderRadius: 27,
+    marginBottom: 15,
+    maxWidth: '92%',
   },
   userMessage: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6a11cb',
     alignSelf: 'flex-end',
+    borderTopRightRadius: 9,
   },
   systemMessage: {
-    backgroundColor: '#E5E5EA',
+    backgroundColor: '#23242a',
     alignSelf: 'flex-start',
+    borderTopLeftRadius: 9,
   },
   messageText: {
-    fontSize: 16,
+    fontSize: 24,
   },
   userMessageText: {
     color: '#fff',
   },
   systemMessageText: {
-    color: '#000',
+    color: '#e0e0e0',
   },
   timestamp: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+    fontSize: 18,
+    color: '#888',
+    marginTop: 6,
     alignSelf: 'flex-end',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 8,
+    backgroundColor: '#23242a',
+    borderRadius: 36,
+    padding: 15,
+    margin: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 9,
+    elevation: 3,
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    paddingHorizontal: 12,
-    maxHeight: 100,
+    fontSize: 24,
+    paddingHorizontal: 21,
+    maxHeight: 150,
+    color: '#fff',
+    backgroundColor: 'transparent',
+    outline: 'none',
   },
   sendButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    backgroundColor: '#6a11cb',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 30,
+    marginLeft: 12,
   },
   sendButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#444',
   },
   sendButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: '600',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    padding: 12,
   },
   loadingText: {
-    marginLeft: 8,
-    color: '#666',
+    marginLeft: 12,
+    color: '#b3b3b3',
+    fontSize: 24,
+  },
+  welcomeContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 108,
+    height: 108,
+    marginBottom: 36,
+  },
+  welcomeTitle: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 18,
+    textAlign: 'center',
+  },
+  welcomeSubtitle: {
+    fontSize: 27,
+    color: '#b3b3b3',
+    textAlign: 'center',
+  },
+  newChatBar: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 18,
+    marginBottom: 12,
+  },
+  newChatBarBottom: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 0,
+    marginTop: 0,
+  },
+  newChatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#6a11cb',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 4,
+  },
+  newChatText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
