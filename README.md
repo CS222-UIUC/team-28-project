@@ -8,6 +8,22 @@ A modern task management application that uses natural language processing to he
 * No centralized scheduling tool.
 * Manual tracking wastes time and causes stress.
 
+#  Solution
+
+* StudySync: One mobile app for all tasks.
+* Chatbot input creates calendar events.
+* Reminders for approaching deadlines.
+* Manual editing allowed anytime.
+* Account system to save schedules.
+
+# Components + Tech Stack
+
+* Frontend: React Native + Expo.
+* Backend: Node.js API server.
+* NLP: Python FastAPI + spaCy.
+* Database & Auth: Supabase (PostgreSQL + Auth)
+* Calendar: FullCalendar.js integration.
+
 ## Project Structure
 
 ```
