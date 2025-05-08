@@ -2,6 +2,12 @@
 
 A modern task management application that uses natural language processing to help users organize their tasks and events.
 
+#  Problem
+* Deadlines spread across multiple systems.
+* Easy to forget exams, assignments, meetings.
+* No centralized scheduling tool.
+* Manual tracking wastes time and causes stress.
+
 ## Project Structure
 
 ```
