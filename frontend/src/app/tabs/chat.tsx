@@ -226,7 +226,7 @@ export default function ChatScreen() {
   // Helper to build a message showing extracted fields
   function buildExtractedMessage(extracted: any) {
     let msg = '';
-    if (extracted.task) msg += `\n- Task: "${extracted.task}"`;
+    if (extracted.task) msg += `\n- Task: ${extracted.task}`;
     if (extracted.date) msg += `\n- Date: ${extracted.date}`;
     if (extracted.time) msg += `\n- Time: ${extracted.time}`;
     if (extracted.participants?.length) msg += `\n- Participants: ${extracted.participants.join(', ')}`;

@@ -16,11 +16,12 @@ team-28-project/
 │   ├── routers/          # FastAPI routers
 │   │   ├── nlp_events.py
 │   │   └── ...
-│   ├── models/           # Python models (if used)
-│   ├── services/         # Python services (if used)
-│   ├── utils/            # Python utilities (if used)
+│   ├── models/           # Python models
+│   ├── services/         # Python services
+│   ├── utils/            # Python utilities
 │   ├── main.py           # FastAPI app entrypoint
-│   ├── requirements.txt  # Python dependencies
+│   ├── test_api_client.py # API test client
+│   ├── test_simple_nlp.py # NLP test suite
 │   ├── package.json      # Node.js dependencies for backend
 │   ├── package-lock.json
 │   └── .env              # Backend environment variables (not committed)
@@ -37,9 +38,14 @@ team-28-project/
 │   ├── package.json      # Frontend dependencies
 │   ├── package-lock.json
 │   └── .env              # Frontend environment variables (not committed)
+├── app/                  # Additional application code
+├── venv/                 # Python virtual environment
+├── .expo/                # Expo configuration
 ├── README.md
+├── requirements.txt      # Root Python dependencies
 ├── .gitignore
-└── scripts/              # Utility scripts (if any)
+├── input.json           # Test input data
+└── output.json          # Test output data
 ```
 
 ## Prerequisites
@@ -125,3 +131,19 @@ npm start
 
 ## License
 MIT
+
+## Testing
+
+The project includes comprehensive test suites:
+
+### API Tests
+```bash
+cd backend
+python test_api_client.py
+```
+
+### NLP Tests
+```bash
+cd backend
+python test_simple_nlp.py
+```

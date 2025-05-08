@@ -1,5 +1,6 @@
 import { TaskEvent } from './types';
 import { authorizedFetch } from '../utils/authfetch';
+import mockData from '../../assets/mock_data.json';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -7,13 +8,25 @@ export type NLPTaskResponse =
   | { task: TaskEvent; extracted_info?: any }
   | { extracted: any; missingFields: string[]; message: string };
 
+type MockData = {
+  [date: string]: TaskEvent[];
+};
+
 /**
  * Fetch todos for a given date.
  * Assumes the backend returns: { events: TaskEvent[] }
  */
 export const getTodosByDate = async (date: string): Promise<TaskEvent[]> => {
-  const response = await authorizedFetch(`${BASE_URL}/calendar/todos?date=${date}`);
-  return response.json();
+  // For development, use mock data
+  console.log('Fetching tasks for date:', date);
+  console.log('Available mock data:', mockData);
+  
+  // Always use mock data for now to ensure it works
+  return (mockData as MockData)[date] || [];
+  
+  // Comment out the real API call for now
+  // const response = await authorizedFetch(`${BASE_URL}/calendar/todos?date=${date}`);
+  // return response.json();
 };
 
 /**

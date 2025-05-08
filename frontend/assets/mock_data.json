@@ -1,23 +1,246 @@
 {
-    "2025-04-17": [
-      {
-        "task": "Meet",
-        "participants": ["John"],
-        "date": "2025-04-17",
-        "time": "14:00",
-        "end_time": null,
-        "locations": []
-      }
-    ],
-    "2025-04-20": [
-      {
-        "task": "Call",
-        "participants": ["Mom"],
-        "date": "2025-04-20",
-        "time": "20:00",
-        "end_time": null,
-        "locations": []
-      }
-    ]
-  }
-  
+  "2025-04-17": [
+    {
+      "task": "Meet",
+      "participants": ["John"],
+      "date": "2025-04-17",
+      "time": "14:00",
+      "end_time": null,
+      "locations": []
+    }
+  ],
+  "2025-04-28": [
+    {
+      "task": "Call",
+      "participants": ["Mom"],
+      "date": "2025-04-28",
+      "time": "20:00",
+      "end_time": null,
+      "locations": []
+    }
+  ],
+  "2025-05-08": [
+    {
+      "task": "Meet",
+      "participants": ["John"],
+      "date": "2025-05-07",
+      "time": "14:00",
+      "end_time": null,
+      "locations": []
+    }
+  ],
+  "2025-04-20": [
+    {
+      "task": "Lunch",
+      "participants": ["Alice", "Bob"],
+      "date": "2025-04-20",
+      "time": "12:00",
+      "end_time": null,
+      "locations": ["Cafe A"]
+    }
+  ],
+  "2025-04-25": [
+    {
+      "task": "Work Session",
+      "participants": ["David"],
+      "date": "2025-04-25",
+      "time": "09:00",
+      "end_time": "12:00",
+      "locations": ["Office"]
+    }
+  ],
+  "2025-05-02": [
+    {
+      "task": "Team Meeting",
+      "participants": ["Emma", "Liam", "Sophia"],
+      "date": "2025-05-02",
+      "time": "10:00",
+      "end_time": "11:30",
+      "locations": ["Conference Room 1"]
+    }
+  ],
+  "2025-05-10": [
+    {
+      "task": "Call",
+      "participants": ["Dad"],
+      "date": "2025-05-10",
+      "time": "18:30",
+      "end_time": null,
+      "locations": []
+    }
+  ],
+  "2025-05-15": [
+    {
+      "task": "Workshop",
+      "participants": ["Team A"],
+      "date": "2025-05-15",
+      "time": "14:00",
+      "end_time": "16:00",
+      "locations": ["Room 305"]
+    }
+  ],
+  "2025-05-07": [
+    {
+      "task": "Lunch with Sarah",
+      "participants": ["Sarah"],
+      "date": "2025-05-07",
+      "time": "12:00",
+      "end_time": null,
+      "locations": ["Restaurant B"]
+    },
+    {
+      "task": "Work Review",
+      "participants": ["David", "Emma"],
+      "date": "2025-05-07",
+      "time": "15:00",
+      "end_time": "17:00",
+      "locations": ["Office"]
+    },
+    {
+      "task": "Call with Bob",
+      "participants": ["Bob"],
+      "date": "2025-05-07",
+      "time": "19:00",
+      "end_time": null,
+      "locations": []
+    },
+    {
+      "task": "Doctor's Appointment",
+      "participants": ["Nhi"],
+      "date": "2025-05-07",
+      "time": "09:00",
+      "end_time": "09:30",
+      "locations": ["Health Clinic"]
+    },
+    {
+      "task": "Team Sync",
+      "participants": ["Team A"],
+      "date": "2025-05-07",
+      "time": "11:00",
+      "end_time": "12:00",
+      "locations": ["Virtual Meeting"]
+    },
+    {
+      "task": "Project Discussion",
+      "participants": ["John", "Nhi"],
+      "date": "2025-05-07",
+      "time": "13:00",
+      "end_time": "14:00",
+      "locations": ["Office"]
+    },
+    {
+      "task": "Lunch",
+      "participants": ["Emma"],
+      "date": "2025-05-07",
+      "time": "12:30",
+      "end_time": null,
+      "locations": ["Café Central"]
+    },
+    {
+      "task": "Code Review",
+      "participants": ["David", "Nhi"],
+      "date": "2025-05-07",
+      "time": "16:00",
+      "end_time": "17:00",
+      "locations": ["Virtual Meeting"]
+    },
+    {
+      "task": "Homework Due",
+      "participants": ["Math 412"],
+      "date": "2025-05-07",
+      "time": "23:59",
+      "end_time": null,
+      "locations": []
+    },
+    {
+      "task": "Homework Due",
+      "participants": ["STAT 400"],
+      "date": "2025-05-07",
+      "time": "23:59",
+      "end_time": null,
+      "locations": []
+    },
+    {
+      "task": "Homework Due",
+      "participants": ["CS 173"],
+      "date": "2025-05-07",
+      "time": "23:59",
+      "end_time": null,
+      "locations": []
+    },
+    {
+      "task": "Submit Project",
+      "participants": ["CS 225"],
+      "date": "2025-05-07",
+      "time": "23:59",
+      "end_time": null,
+      "locations": []
+    },
+    {
+      "task": "Homework Due",
+      "participants": ["IE 421"],
+      "date": "2025-05-07",
+      "time": "23:59",
+      "end_time": null,
+      "locations": []
+    }
+  ],
+  "2025-05-03": [
+    {
+      "task": "Doctor's Appointment",
+      "participants": ["Alice"],
+      "date": "2025-05-03",
+      "time": "10:00",
+      "end_time": "10:30",
+      "locations": ["Health Clinic"]
+    }
+  ],
+  "2025-05-05": [
+    {
+      "task": "Work Presentation",
+      "participants": ["Nhi", "John"],
+      "date": "2025-05-05",
+      "time": "14:00",
+      "end_time": "15:30",
+      "locations": ["Office"]
+    }
+  ],
+  "2025-05-06": [
+    {
+      "task": "Team Discussion",
+      "participants": ["Emma", "Liam"],
+      "date": "2025-05-06",
+      "time": "09:00",
+      "end_time": "10:00",
+      "locations": ["Conference Room 1"]
+    },
+    {
+      "task": "Lunch with Bob",
+      "participants": ["Bob"],
+      "date": "2025-05-06",
+      "time": "12:00",
+      "end_time": null,
+      "locations": ["Restaurant C"]
+    }
+  ],
+  "2025-05-09": [
+    {
+      "task": "Team Workshop",
+      "participants": ["Team B"],
+      "date": "2025-05-09",
+      "time": "13:00",
+      "end_time": "16:00",
+      "locations": ["Workshop Room"]
+    }
+  ],
+  "2025-05-12": [
+    {
+      "task": "Strategy Meeting",
+      "participants": ["David", "Sophia", "Liam"],
+      "date": "2025-05-12",
+      "time": "15:00",
+      "end_time": "16:30",
+      "locations": ["Meeting Room A"]
+    }
+  ]
+}

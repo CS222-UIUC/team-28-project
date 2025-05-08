@@ -448,6 +448,8 @@ class TaskExtractor:
         elif cleaned_task:
             cleaned_task = cleaned_task[0].upper() + cleaned_task[1:]
         
+        # Remove any quotes from the task
+        cleaned_task = cleaned_task.strip('"\'')
         extracted["task"] = cleaned_task
 
     def _check_with_preposition(self, doc, extracted):
