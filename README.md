@@ -2,6 +2,13 @@
 
 A modern task management application that uses natural language processing to help users organize their tasks and events.
 
+### 👥 Group Members
+
+- **Anusha Muralidhar** – Database
+- **Nhi Dinh** – Sync and FastAPI
+- **Grace Lin** – Frontend (Login Page)
+- **Ruoqi Wang** – Calendar Page, Frontend
+
 #  Problem
 * Deadlines spread across multiple systems.
 * Easy to forget exams, assignments, meetings.
@@ -169,10 +176,3 @@ python test_api_client.py
 cd backend
 python test_simple_nlp.py
 ```
-
-### 👥 Group Members
-
-- **Anusha Muralidhar** – Database
-- **Nhi Dinh** – Sync and FastAPI
-- **Grace Lin** – Frontend (Login Page)
-- **Ruoqi Wang** – Calendar Page, Frontend
