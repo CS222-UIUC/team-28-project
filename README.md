@@ -147,3 +147,9 @@ python test_api_client.py
 cd backend
 python test_simple_nlp.py
 ```
+
+### Group Members：
+Anusha Muralidhar: database
+Nhi Dinh: Sync and Fast API
+Grace Lin: Frontend, log in page
+Ruoqi Wang: calendar page, front end
