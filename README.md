@@ -1,4 +1,4 @@
-# NLP Task Manager
+# StudySync App
 
 A modern task management application that uses natural language processing to help users organize their tasks and events.
 
