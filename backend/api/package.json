@@ -1,0 +1,21 @@
+{
+  "name": "team-28-backend",
+  "version": "1.0.0",
+  "description": "Backend services for NLP Task Calendar",
+  "scripts": {
+    "start:auth": "cd auth && node server.js",
+    "start:api": "cd api && node server.js",
+    "start:db": "cd database && node server.js",
+    "install:all": "npm install && cd auth && npm install && cd ../api && npm install && cd ../database && npm install"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.7.1"
+  }
+}

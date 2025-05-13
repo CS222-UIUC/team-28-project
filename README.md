@@ -1,37 +1,52 @@
-# StudySync App
+# StudySync
 
-A modern task management application that uses natural language processing to help users organize their tasks and events.
+A sophisticated task management application leveraging natural language processing to streamline task organization and event management.
 
-### 👥 Group Members
+## Overview
 
-- **Anusha Muralidhar** – Database
-- **Nhi Dinh** – Sync and FastAPI
-- **Grace Lin** – Frontend (Login Page)
-- **Ruoqi Wang** – Calendar Page, Frontend
+StudySync is an innovative solution designed to address the challenges of modern task management through intelligent automation and seamless integration. By combining natural language processing with calendar management, StudySync provides a unified platform for organizing academic and professional commitments.
 
-#  Problem
-* Deadlines spread across multiple systems.
-* Easy to forget exams, assignments, meetings.
-* No centralized scheduling tool.
-* Manual tracking wastes time and causes stress.
+## Team
 
-#  Solution
+- **Anusha Muralidhar** – Database Architecture & Implementation
+- **Nhi Dinh** – Backend Architecture, NLP Development, API Integration & Testing
+- **Grace Lin** – Frontend Development & Authentication
+- **Ruoqi Wang** – Calendar Integration & UI/UX
 
-* StudySync: One mobile app for all tasks.
-* Chatbot input creates calendar events.
-* Reminders for approaching deadlines.
-* Manual editing allowed anytime.
-* Account system to save schedules.
+## Problem Statement
 
-# Components + Tech Stack
+Modern professionals and students face several challenges in task management:
 
-* Frontend: React Native + Expo.
-* Backend: Node.js API server.
-* NLP: Python FastAPI + spaCy.
-* Database & Auth: Supabase (PostgreSQL + Auth)
-* Calendar: FullCalendar.js integration.
+- Distributed deadlines across multiple platforms and systems
+- Inefficient tracking of academic and professional commitments
+- Lack of centralized scheduling solutions
+- Time-consuming manual task management
+- Increased stress due to disorganized scheduling
+
+## Solution
+
+StudySync addresses these challenges through:
+
+- Unified task management platform
+- Natural language processing for intuitive task creation
+- Automated calendar event generation
+- Smart deadline reminders and notifications
+- Flexible manual editing capabilities
+- Secure user account system for persistent scheduling
+
+## Technical Architecture
+
+### Technology Stack
+
+- **Frontend**: React Native with Expo framework
+- **Backend**: Node.js REST API
+- **Natural Language Processing**: Python FastAPI with spaCy
+- **Database & Authentication**: Supabase (PostgreSQL)
+- **Calendar Integration**: FullCalendar.js
 
 ## Project Structure
+
+![Project Structure](structure.png)
 
 ```
 team-28-project/
@@ -77,102 +92,120 @@ team-28-project/
 └── output.json          # Test output data
 ```
 
-## Prerequisites
+## System Requirements
 
 - Node.js (v14 or higher)
 - npm (v6 or higher)
 - Python 3.8 or higher
-- pip
+- pip package manager
 - Expo CLI (`npm install -g expo-cli`)
 
-## Setup
+## Installation
 
-### 1. Clone the repository
+### 1. Repository Setup
 ```bash
 git clone [repository-url]
 cd team-28-project
 ```
 
-### 2. Install backend dependencies
+### 2. Dependency Installation
 ```bash
+# Backend Dependencies
 cd backend
-npm install # For Node.js API
+npm install
 cd ../frontend
-npm install # For frontend
+npm install
 cd ../backend
-pip install -r requirements.txt # For FastAPI NLP (if requirements.txt exists)
-# Or manually install:
+
+# Python Dependencies
+pip install -r requirements.txt
+# Alternative manual installation:
 pip install fastapi uvicorn spacy dateparser
 python -m spacy download en_core_web_sm
 ```
 
-### 3. Environment Variables
-Create a `.env` file in the `backend` directory with the following content:
+### 3. Environment Configuration
+Create a `.env` file in the `backend` directory:
 ```env
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
 JWT_SECRET=your_jwt_secret
 ```
 
-## Running the Application
+## Deployment
 
-You need to run **three servers** in separate terminal windows:
+The application requires three concurrent server instances:
 
-### 1. Start the FastAPI NLP Server
+### 1. FastAPI NLP Server
 ```bash
 cd backend
 uvicorn main:app --reload --port 8080
 ```
-- This will start the FastAPI NLP service on port 8080.
-- Test it: [http://localhost:8080](http://localhost:8080)
+- Service endpoint: [http://localhost:8080](http://localhost:8080)
 
-### 2. Start the Node.js API Server
+### 2. Node.js API Server
 ```bash
 cd backend/api
 node server.cjs
 ```
-- This will start the Node.js backend on port 3000.
-- Test it: [http://localhost:3000](http://localhost:3000)
+- Service endpoint: [http://localhost:3000](http://localhost:3000)
 
-### 3. Start the Frontend (Expo)
+### 3. Frontend Development Server
 ```bash
 cd frontend
 npm start
 ```
-- This will start the Expo development server.
-- You can then:
-  - Press `i` to open in iOS simulator
-  - Press `a` to open in Android emulator
-  - Press `w` to open in web browser
+- Development options:
+  - iOS Simulator: Press `i`
+  - Android Emulator: Press `a`
+  - Web Browser: Press `w`
 
-## Testing the Integration
-- Use the chat UI in the frontend to enter a natural language task (e.g., "meeting with Tom at 2pm Sunday").
-- The frontend will send the request to the Node.js backend, which will call the FastAPI NLP service and return extracted task details.
+## Integration Testing
 
-## Troubleshooting
-- If you get a 500 error from `/tasks/nlp`, make sure both the Node.js and FastAPI servers are running.
-- If you see Python import errors, check that you are in the correct directory and all dependencies are installed.
-- If you see CORS errors, make sure CORS is enabled in both backend servers.
-- **To kill any processes running on ports 3000, 8080, 8081, or 5432:**
-  ```bash
-  lsof -ti:3000,8080,8081,5432 | xargs kill -9
-  ```
+The system can be tested using the chat interface:
+1. Enter a natural language task (e.g., "meeting with Tom at 2pm Sunday")
+2. The frontend will process the request through the Node.js backend
+3. The FastAPI NLP service will extract and return task details
 
-## License
-MIT
+## Troubleshooting Guide
 
-## Testing
+### Common Issues
+
+1. **API 500 Error**
+   - Verify both Node.js and FastAPI servers are running
+   - Check server logs for detailed error messages
+
+2. **Python Import Errors**
+   - Confirm correct working directory
+   - Verify all dependencies are installed
+   - Check Python environment activation
+
+3. **CORS Issues**
+   - Ensure CORS is enabled in both backend servers
+   - Verify correct port configurations
+
+4. **Port Conflicts**
+   To terminate processes on specific ports:
+   ```bash
+   lsof -ti:3000,8080,8081,5432 | xargs kill -9
+   ```
+
+## Quality Assurance
 
 The project includes comprehensive test suites:
 
-### API Tests
+### API Testing
 ```bash
 cd backend
 python test_api_client.py
 ```
 
-### NLP Tests
+### NLP Testing
 ```bash
 cd backend
 python test_simple_nlp.py
 ```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -1,7 +1,7 @@
 {
     "results": [
         {
-            "original_text": "CS",
+            "original_text": "CS Advising",
             "extracted_entities": {
                 "task": "Task",
                 "participants": [],
@@ -9,7 +9,7 @@
                 "time": null,
                 "end_time": null,
                 "locations": [
-                    "CS"
+                    "CS Advising"
                 ]
             }
         }
